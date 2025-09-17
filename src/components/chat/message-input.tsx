@@ -78,18 +78,6 @@ export function MessageInput({ onSendMessage, category, onCategoryChange, isCate
           disabled={isSending}
         />
         <div className="flex items-center gap-2">
-           <Select value={category} onValueChange={(value: ChatCategory) => onCategoryChange(value)} disabled={isSending || isCategoryDisabled}>
-            <SelectTrigger className="w-[120px] hidden sm:flex">
-                <SelectValue placeholder="Kategori"/>
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value="Kritis">Kritis</SelectItem>
-                <SelectItem value="Tinggi">Tinggi</SelectItem>
-                <SelectItem value="Sedang">Sedang</SelectItem>
-                <SelectItem value="Rendah">Rendah</SelectItem>
-            </SelectContent>
-          </Select>
-
           <Button type="button" variant="ghost" size="icon" className="relative" disabled={isSending}>
             <Paperclip className="h-5 w-5" />
             <Input type="file" className="absolute inset-0 h-full w-full cursor-pointer opacity-0" onChange={handleFileChange}/>
