@@ -175,32 +175,32 @@ export default function ChatPage() {
         onClose={handleCloseModal}
         onSubmit={handleStartConsultation}
       />
-      <div className="flex flex-col h-full gap-6">
-        <div className="flex items-center justify-center gap-2 text-2xl font-bold tracking-tight">
-          <MessageSquare className="h-6 w-6" />
-          <h1>Ruang Konsultasi</h1>
-        </div>
-        <div className="flex flex-1 justify-center gap-6 overflow-hidden w-full">
-          <div className="flex w-full max-w-6xl">
-            <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
-              {!hasSessionStarted && messages.length === 0 ? (
-                <div className="flex flex-1 items-center justify-center">
-                  <p className="text-muted-foreground">Memulai sesi konsultasi...</p>
-                </div>
-              ) : (
-                <>
-                  <ChatBox messages={messages} currentUser={user} csUser={users.cs} isCsTyping={isCsTyping} />
-                  <MessageInput
-                    onSendMessage={handleSendMessage}
-                    category={category}
-                    onCategoryChange={() => {}}
-                    isCategoryDisabled={true}
-                  />
-                </>
-              )}
-            </Card>
-            <AvailableCS csList={csList} />
-          </div>
+      <div className="flex h-[calc(100vh-10rem)] w-full flex-col items-center">
+        <div className="flex w-full max-w-6xl flex-col gap-6">
+            <div className="flex items-center justify-center gap-2 text-2xl font-bold tracking-tight">
+              <MessageSquare className="h-6 w-6" />
+              <h1>Ruang Konsultasi</h1>
+            </div>
+            <div className="flex flex-1 gap-6 overflow-hidden">
+                <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
+                  {!hasSessionStarted && messages.length === 0 ? (
+                    <div className="flex flex-1 items-center justify-center">
+                      <p className="text-muted-foreground">Memulai sesi konsultasi...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <ChatBox messages={messages} currentUser={user} csUser={users.cs} isCsTyping={isCsTyping} />
+                      <MessageInput
+                        onSendMessage={handleSendMessage}
+                        category={category}
+                        onCategoryChange={() => {}}
+                        isCategoryDisabled={true}
+                      />
+                    </>
+                  )}
+                </Card>
+                <AvailableCS csList={csList} />
+            </div>
         </div>
         <FeedbackModal
           isOpen={showFeedbackModal}
