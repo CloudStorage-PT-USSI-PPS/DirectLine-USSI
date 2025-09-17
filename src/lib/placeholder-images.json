@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "dashboard-1",
+      "description": "A dashboard card image for a system upgrade announcement.",
+      "imageUrl": "https://picsum.photos/seed/dashboard-1/600/400",
+      "imageHint": "server technology"
+    },
+    {
+      "id": "dashboard-2",
+      "description": "A dashboard card image for a new chat history feature.",
+      "imageUrl": "https://picsum.photos/seed/dashboard-2/600/400",
+      "imageHint": "chat application"
+    },
+    {
+      "id": "dashboard-3",
+      "description": "A dashboard card image for an account security tips.",
+      "imageUrl": "https://picsum.photos/seed/dashboard-3/600/400",
+      "imageHint": "cyber security"
+    }
+  ]
 }
