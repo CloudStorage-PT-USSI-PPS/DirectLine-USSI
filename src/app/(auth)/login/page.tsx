@@ -14,7 +14,7 @@ export default function LoginPage() {
             Selamat Datang Kembali
           </h1>
           <p className="text-sm text-muted-foreground">
-            Masukkan email dan password Anda untuk masuk
+            PT USSI Siap Melayani dengan sepenuh hati
           </p>
         </div>
         <LoginForm />
