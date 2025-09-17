@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default function LoginPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+      <div className="mx-auto flex w-full animate-in fade-in-0 zoom-in-95 duration-300 flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
           <div className="mx-auto">
             <Logo />
