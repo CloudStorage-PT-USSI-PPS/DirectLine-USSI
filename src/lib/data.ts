@@ -6,12 +6,14 @@ export const users: { [key: string]: User } = {
     name: 'Budi Client',
     email: 'budi.client@example.com',
     avatar: 'https://i.pravatar.cc/150?u=client',
+    role: 'client',
   },
   cs: {
     id: 'cs-1',
     name: 'Siti Support',
     email: 'siti.support@directline.com',
     avatar: 'https://i.pravatar.cc/150?u=support',
+    role: 'cs',
   },
 };
 

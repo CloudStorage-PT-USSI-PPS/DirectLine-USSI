@@ -25,15 +25,22 @@ export function useAuth() {
 
   const login = useCallback((email: string) => {
     // In a real app, you'd fetch this from an API
-    const loggedInUser = Object.values(users).find(u => u.email.toLowerCase() === email.toLowerCase());
+    const predefinedUser = Object.values(users).find(u => u.email.toLowerCase() === email.toLowerCase());
     
-    if (loggedInUser) {
-      setUser(loggedInUser);
-      localStorage.setItem(AUTH_KEY, JSON.stringify(loggedInUser));
+    if (predefinedUser) {
+      setUser(predefinedUser);
+      localStorage.setItem(AUTH_KEY, JSON.stringify(predefinedUser));
       return true;
     }
-    // Simulate client login for any email
-    const clientUser = { ...users.client, email: email, name: email.split('@')[0] };
+
+    // Simulate client login for any other email
+    const clientUser: User = { 
+        id: `user-${Date.now()}`,
+        email: email, 
+        name: email.split('@')[0], 
+        avatar: `https://i.pravatar.cc/150?u=${email}`,
+        role: 'client' 
+    };
     setUser(clientUser);
     localStorage.setItem(AUTH_KEY, JSON.stringify(clientUser));
     return true;
