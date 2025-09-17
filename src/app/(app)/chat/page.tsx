@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import type { ChatMessage, ChatCategory } from '@/lib/types';
+import type { ChatMessage, ChatCategory, User } from '@/lib/types';
 import { ChatBox } from '@/components/chat/chat-box';
 import { MessageInput } from '@/components/chat/message-input';
 import { FeedbackModal } from '@/components/chat/feedback-modal';
@@ -10,9 +10,39 @@ import { StartConsultationModal } from '@/components/chat/start-consultation-mod
 import { users } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { initiateConsultationAnalysis } from '@/lib/actions';
-import { Card } from '@/components/ui/card';
-import { MessageSquare } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { MessageSquare, Users, Circle } from 'lucide-react';
 import { useChatSession } from '@/components/providers/chat-session-provider';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+
+const AvailableCS = ({ csList }: { csList: User[] }) => (
+  <Card className="hidden lg:block w-80 rounded-2xl shadow-md">
+    <CardHeader>
+      <CardTitle className="flex items-center gap-2">
+        <Users className="h-5 w-5" />
+        CS Tersedia
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="space-y-4">
+      {csList.map(cs => (
+        <div key={cs.id} className="flex items-center gap-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={cs.avatar} alt={cs.name} />
+            <AvatarFallback>{cs.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <p className="font-semibold">{cs.name}</p>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Circle className="h-2 w-2 fill-green-500 text-green-500" />
+              <span>Online</span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </CardContent>
+  </Card>
+);
 
 export default function ChatPage() {
   const { user } = useAuth();
@@ -23,6 +53,8 @@ export default function ChatPage() {
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showStartModal, setShowStartModal] = useState(false);
   const [isCsTyping, setIsCsTyping] = useState(false);
+
+  const csList = Object.values(users).filter(u => u.role === 'cs');
 
   useEffect(() => {
     if (user && !hasSessionStarted) {
@@ -141,30 +173,33 @@ export default function ChatPage() {
         onClose={handleCloseModal}
         onSubmit={handleStartConsultation}
       />
-      <div className="w-full max-w-4xl flex h-full flex-col space-y-4">
+      <div className="w-full max-w-7xl flex flex-col space-y-4">
         <div className='flex items-center gap-4'>
           <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
             <MessageSquare className="h-6 w-6" />
             <h1>Ruang Konsultasi</h1>
           </div>
         </div>
-        <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
-           {!hasSessionStarted && messages.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center">
-              <p className="text-muted-foreground">Memulai sesi konsultasi...</p>
-            </div>
-           ) : (
-            <>
-              <ChatBox messages={messages} currentUser={user} csUser={users.cs} isCsTyping={isCsTyping} />
-              <MessageInput
-                onSendMessage={handleSendMessage}
-                category={category}
-                onCategoryChange={() => {}}
-                isCategoryDisabled={true}
-              />
-            </>
-          )}
-        </Card>
+        <div className="flex flex-1 gap-6">
+          <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
+            {!hasSessionStarted && messages.length === 0 ? (
+              <div className="flex flex-1 items-center justify-center">
+                <p className="text-muted-foreground">Memulai sesi konsultasi...</p>
+              </div>
+            ) : (
+              <>
+                <ChatBox messages={messages} currentUser={user} csUser={users.cs} isCsTyping={isCsTyping} />
+                <MessageInput
+                  onSendMessage={handleSendMessage}
+                  category={category}
+                  onCategoryChange={() => {}}
+                  isCategoryDisabled={true}
+                />
+              </>
+            )}
+          </Card>
+          <AvailableCS csList={csList} />
+        </div>
         <FeedbackModal
           isOpen={showFeedbackModal}
           onClose={() => setShowFeedbackModal(false)}
@@ -173,3 +208,4 @@ export default function ChatPage() {
       </div>
     </div>
   );
+}

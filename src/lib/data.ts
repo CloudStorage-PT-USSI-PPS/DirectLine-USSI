@@ -12,7 +12,21 @@ export const users: { [key: string]: User } = {
     id: 'cs-1',
     name: 'Siti Support',
     email: 'siti.support@directline.com',
-    avatar: 'https://i.pravatar.cc/150?u=support',
+    avatar: 'https://i.pravatar.cc/150?u=siti',
+    role: 'cs',
+  },
+  cs2: {
+    id: 'cs-2',
+    name: 'Doni Dermawan',
+    email: 'doni.dermawan@directline.com',
+    avatar: 'https://i.pravatar.cc/150?u=doni',
+    role: 'cs',
+  },
+  cs3: {
+    id: 'cs-3',
+    name: 'Rina Ramlan',
+    email: 'rina.ramlan@directline.com',
+    avatar: 'https://i.pravatar.cc/150?u=rina',
     role: 'cs',
   },
 };
