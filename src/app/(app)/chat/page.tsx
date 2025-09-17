@@ -12,10 +12,12 @@ import { useToast } from '@/hooks/use-toast';
 import { initiateConsultationAnalysis } from '@/lib/actions';
 import { Card } from '@/components/ui/card';
 import { MessageSquare } from 'lucide-react';
+import { useChatSession } from '@/components/providers/chat-session-provider';
 
 export default function ChatPage() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { hasSessionStarted, startSession } = useChatSession();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [category, setCategory] = useState<ChatCategory>('Sedang');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
@@ -23,13 +25,13 @@ export default function ChatPage() {
   const [isCsTyping, setIsCsTyping] = useState(false);
 
   useEffect(() => {
-    // Show start modal only if there are no messages yet.
-    if (user && messages.length === 0) {
+    if (user && !hasSessionStarted) {
       setShowStartModal(true);
     }
-  }, [user, messages.length]);
+  }, [user, hasSessionStarted]);
 
   const handleStartConsultation = (initialMessage: string, category: ChatCategory) => {
+    startSession(); 
     setCategory(category);
     setShowStartModal(false);
     
@@ -43,6 +45,11 @@ export default function ChatPage() {
     setMessages([welcomeMessage]);
     handleSendMessage(initialMessage);
   };
+
+  const handleCloseModal = () => {
+    startSession();
+    setShowStartModal(false);
+  }
 
 
   const handleSendMessage = async (content: string, file?: File) => {
@@ -131,7 +138,7 @@ export default function ChatPage() {
     <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
       <StartConsultationModal 
         isOpen={showStartModal}
-        onClose={() => setShowStartModal(false)}
+        onClose={handleCloseModal}
         onSubmit={handleStartConsultation}
       />
       <div className="w-full max-w-4xl flex h-full flex-col space-y-4">
@@ -142,7 +149,11 @@ export default function ChatPage() {
           </div>
         </div>
         <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
-           {messages.length > 0 ? (
+           {!hasSessionStarted && messages.length === 0 ? (
+            <div className="flex flex-1 items-center justify-center">
+              <p className="text-muted-foreground">Memulai sesi konsultasi...</p>
+            </div>
+           ) : (
             <>
               <ChatBox messages={messages} currentUser={user} csUser={users.cs} isCsTyping={isCsTyping} />
               <MessageInput
@@ -152,10 +163,6 @@ export default function ChatPage() {
                 isCategoryDisabled={true}
               />
             </>
-          ) : (
-            <div className="flex flex-1 items-center justify-center">
-              <p className="text-muted-foreground">Memulai sesi konsultasi...</p>
-            </div>
           )}
         </Card>
         <FeedbackModal
@@ -166,4 +173,3 @@ export default function ChatPage() {
       </div>
     </div>
   );
-}
