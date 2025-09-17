@@ -2,14 +2,14 @@ import { chatHistory } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, History } from 'lucide-react';
 
 export default function HistoryPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Riwayat Konsultasi</h1>
-        <p className="text-muted-foreground">Lihat kembali semua percakapan Anda sebelumnya.</p>
+      <div className="flex items-center gap-2 text-3xl font-bold tracking-tight">
+        <History className="h-8 w-8" />
+        <h1>Riwayat Konsultasi</h1>
       </div>
 
       <div className="grid gap-4">

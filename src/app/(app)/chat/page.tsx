@@ -10,6 +10,7 @@ import { users } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { initiateConsultationAnalysis } from '@/lib/actions';
 import { Card } from '@/components/ui/card';
+import { MessageSquare } from 'lucide-react';
 
 export default function ChatPage() {
   const { user } = useAuth();
@@ -115,7 +116,13 @@ export default function ChatPage() {
   if (!user) return null;
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col">
+    <div className="flex h-[calc(100vh-8rem)] flex-col space-y-4">
+      <div className='flex items-center gap-4'>
+        <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+          <MessageSquare className="h-6 w-6" />
+          <h1>Ruang Konsultasi</h1>
+        </div>
+      </div>
       <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
         <ChatBox messages={messages} currentUser={user} csUser={users.cs} isCsTyping={isCsTyping} />
         <MessageInput
