@@ -79,7 +79,9 @@ export default function ChatPage() {
   };
 
   const handleCloseModal = () => {
-    startSession();
+    if (!hasSessionStarted) {
+        startSession();
+    }
     setShowStartModal(false);
   }
 
@@ -167,20 +169,18 @@ export default function ChatPage() {
   if (!user) return null;
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
+    <>
       <StartConsultationModal 
         isOpen={showStartModal}
         onClose={handleCloseModal}
         onSubmit={handleStartConsultation}
       />
-      <div className="w-full max-w-7xl flex flex-col space-y-4">
-        <div className='flex items-center gap-4'>
-          <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-            <MessageSquare className="h-6 w-6" />
-            <h1>Ruang Konsultasi</h1>
-          </div>
+      <div className="flex h-[calc(100vh-8rem)] flex-col gap-6">
+        <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+          <MessageSquare className="h-6 w-6" />
+          <h1>Ruang Konsultasi</h1>
         </div>
-        <div className="flex flex-1 gap-6">
+        <div className="flex flex-1 gap-6 overflow-hidden">
           <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
             {!hasSessionStarted && messages.length === 0 ? (
               <div className="flex flex-1 items-center justify-center">
@@ -206,6 +206,6 @@ export default function ChatPage() {
           onSubmit={handleFeedbackSubmit}
         />
       </div>
-    </div>
+    </>
   );
 }
