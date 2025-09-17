@@ -175,7 +175,7 @@ export default function ChatPage() {
         onClose={handleCloseModal}
         onSubmit={handleStartConsultation}
       />
-      <div className="flex h-[calc(100vh-10rem)] w-full flex-col items-center">
+      <div className="flex h-[calc(100vh-10rem)] w-full justify-center">
         <div className="flex w-full max-w-6xl flex-col gap-6">
             <div className="flex items-center justify-center gap-2 text-2xl font-bold tracking-tight">
               <MessageSquare className="h-6 w-6" />
