@@ -54,7 +54,7 @@ export function LoginForm() {
     if (success) {
       toast({
         title: 'Login Berhasil',
-        description: 'Anda akan diarahkan ke dashboard.',
+        description: 'Selamat berkonsultasi USSIAN!',
       });
       router.push('/');
     } else {
