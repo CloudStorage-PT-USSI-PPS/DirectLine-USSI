@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -49,6 +50,9 @@ export function useAuth() {
   const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem(AUTH_KEY);
+    // Also clear session storage related to chat
+    // This is a bit of a hack, a better solution would involve a global state manager that resets on logout
+    sessionStorage.clear();
   }, []);
 
   return { user, login, logout, loading };

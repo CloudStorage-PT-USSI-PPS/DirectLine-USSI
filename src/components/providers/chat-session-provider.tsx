@@ -1,25 +1,31 @@
 
 'use client';
 
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/use-auth';
+import type { ChatMessage } from '@/lib/types';
 
 interface ChatSessionContextType {
   hasSessionStarted: boolean;
+  messages: ChatMessage[];
   startSession: () => void;
   endSession: () => void;
+  addMessage: (message: ChatMessage) => void;
+  addMessages: (messages: ChatMessage[]) => void;
+  clearMessages: () => void;
 }
 
 const ChatSessionContext = createContext<ChatSessionContextType | undefined>(undefined);
 
 export function ChatSessionProvider({ children }: { children: ReactNode }) {
   const [hasSessionStarted, setHasSessionStarted] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const { user } = useAuth();
 
-  // Reset session when user logs out
   useEffect(() => {
     if (!user) {
       setHasSessionStarted(false);
+      setMessages([]);
     }
   }, [user]);
 
@@ -29,10 +35,23 @@ export function ChatSessionProvider({ children }: { children: ReactNode }) {
 
   const endSession = () => {
     setHasSessionStarted(false);
+    setMessages([]);
+  };
+
+  const addMessage = useCallback((message: ChatMessage) => {
+    setMessages((prevMessages) => [...prevMessages, message]);
+  }, []);
+  
+  const addMessages = useCallback((newMessages: ChatMessage[]) => {
+    setMessages((prevMessages) => [...prevMessages, ...newMessages]);
+  }, []);
+
+  const clearMessages = () => {
+    setMessages([]);
   };
 
   return (
-    <ChatSessionContext.Provider value={{ hasSessionStarted, startSession, endSession }}>
+    <ChatSessionContext.Provider value={{ hasSessionStarted, startSession, endSession, messages, addMessage, addMessages, clearMessages }}>
       {children}
     </ChatSessionContext.Provider>
   );

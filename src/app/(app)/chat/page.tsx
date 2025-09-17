@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -47,8 +48,7 @@ const AvailableCS = ({ csList }: { csList: User[] }) => (
 export default function ChatPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { hasSessionStarted, startSession } = useChatSession();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { hasSessionStarted, startSession, messages, addMessage, addMessages, clearMessages } = useChatSession();
   const [category, setCategory] = useState<ChatCategory>('Sedang');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showStartModal, setShowStartModal] = useState(false);
@@ -74,7 +74,7 @@ export default function ChatPage() {
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
     };
 
-    setMessages([welcomeMessage]);
+    addMessage(welcomeMessage);
     handleSendMessage(initialMessage);
   };
 
@@ -97,10 +97,10 @@ export default function ChatPage() {
       ...(file && { file: { name: file.name, url: '#' } }),
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    addMessage(newMessage);
     setIsCsTyping(true);
 
-    if (messages.filter(m => m.author === 'client').length === 0) {
+    if (messages.filter(m => m.author === 'client').length === 1) { // Only analyze first message
       // First client message, trigger AI analysis
       try {
         const analysis = await initiateConsultationAnalysis({ initialMessage: content });
@@ -110,7 +110,7 @@ export default function ChatPage() {
           content: `Menganalisis permintaan... Ditemukan kata kunci: "${analysis.keywords}". Menghubungkan ke tim: ${analysis.suggestedSupportStaff}.`,
           timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         };
-        setMessages((prev) => [...prev, systemMessage]);
+        addMessage(systemMessage);
         toast({
           title: "Konsultasi Dianalisis",
           description: `Anda akan dihubungkan dengan tim ${analysis.suggestedSupportStaff}.`,
@@ -130,9 +130,9 @@ export default function ChatPage() {
         id: `cs-msg-${Date.now()}`,
         author: 'cs',
         content: 'Baik, terima kasih atas informasinya. Kami sedang memeriksa masalah Anda.',
-        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       };
-      setMessages((prev) => [...prev, csReply]);
+      addMessage(csReply);
       setIsCsTyping(false);
       toast({
         title: "Pesan Baru",
@@ -148,7 +148,7 @@ export default function ChatPage() {
             content: 'Sesi konsultasi telah berakhir. Mohon berikan feedback Anda.',
             timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
           };
-          setMessages((prev) => [...prev, endMessage]);
+          addMessage(endMessage);
           setShowFeedbackModal(true);
         }, 2000);
       }
@@ -163,7 +163,7 @@ export default function ChatPage() {
     });
     setShowFeedbackModal(false);
     // Optionally reset chat
-    // setMessages([]);
+    // clearMessages();
   };
 
   if (!user) return null;
@@ -175,12 +175,12 @@ export default function ChatPage() {
         onClose={handleCloseModal}
         onSubmit={handleStartConsultation}
       />
-      <div className="flex h-[calc(100vh-8rem)] flex-col gap-6">
+      <div className="flex flex-col h-full items-center justify-center gap-6">
         <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
           <MessageSquare className="h-6 w-6" />
           <h1>Ruang Konsultasi</h1>
         </div>
-        <div className="flex flex-1 gap-6 overflow-hidden">
+        <div className="flex flex-1 gap-6 overflow-hidden w-full max-w-6xl">
           <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
             {!hasSessionStarted && messages.length === 0 ? (
               <div className="flex flex-1 items-center justify-center">
