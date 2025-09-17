@@ -20,13 +20,14 @@ interface MessageInputProps {
   onSendMessage: (content: string, file?: File) => Promise<void>;
   category: ChatCategory;
   onCategoryChange: (category: ChatCategory) => void;
+  isCategoryDisabled?: boolean;
 }
 
 type Inputs = {
   message: string;
 };
 
-export function MessageInput({ onSendMessage, category, onCategoryChange }: MessageInputProps) {
+export function MessageInput({ onSendMessage, category, onCategoryChange, isCategoryDisabled = false }: MessageInputProps) {
   const [isSending, setIsSending] = useState(false);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
 
@@ -77,7 +78,7 @@ export function MessageInput({ onSendMessage, category, onCategoryChange }: Mess
           disabled={isSending}
         />
         <div className="flex items-center gap-2">
-           <Select value={category} onValueChange={(value: ChatCategory) => onCategoryChange(value)} disabled={isSending}>
+           <Select value={category} onValueChange={(value: ChatCategory) => onCategoryChange(value)} disabled={isSending || isCategoryDisabled}>
             <SelectTrigger className="w-[120px] hidden sm:flex">
                 <SelectValue placeholder="Kategori"/>
             </SelectTrigger>

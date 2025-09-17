@@ -6,6 +6,7 @@ import type { ChatMessage, ChatCategory } from '@/lib/types';
 import { ChatBox } from '@/components/chat/chat-box';
 import { MessageInput } from '@/components/chat/message-input';
 import { FeedbackModal } from '@/components/chat/feedback-modal';
+import { StartConsultationModal } from '@/components/chat/start-consultation-modal';
 import { users } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { initiateConsultationAnalysis } from '@/lib/actions';
@@ -18,23 +19,34 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [category, setCategory] = useState<ChatCategory>('Sedang');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showStartModal, setShowStartModal] = useState(false);
   const [isCsTyping, setIsCsTyping] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setMessages([
-        {
-          id: 'welcome-msg',
-          author: 'system',
-          content: `Halo USSIANS, selamat datang di DirectLine. Silakan jelaskan masalah Anda.`,
-          timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        },
-      ]);
+    // Show start modal only if there are no messages yet.
+    if (user && messages.length === 0) {
+      setShowStartModal(true);
     }
-  }, [user]);
+  }, [user, messages.length]);
+
+  const handleStartConsultation = (initialMessage: string, category: ChatCategory) => {
+    setCategory(category);
+    setShowStartModal(false);
+    
+    const welcomeMessage: ChatMessage = {
+      id: 'welcome-msg',
+      author: 'system',
+      content: `Halo USSIANS, selamat datang di DirectLine. Sesi Anda telah dimulai dengan prioritas "${category}".`,
+      timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setMessages([welcomeMessage]);
+    handleSendMessage(initialMessage);
+  };
+
 
   const handleSendMessage = async (content: string, file?: File) => {
-    if (!user) return;
+    if (!user || !content.trim()) return;
 
     const newMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -117,6 +129,14 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
+      <StartConsultationModal 
+        isOpen={showStartModal}
+        onClose={() => {
+            // If user closes modal without starting, you might want to redirect or show a message
+            // For now, we'll just keep it open.
+        }}
+        onSubmit={handleStartConsultation}
+      />
       <div className="w-full max-w-4xl flex h-full flex-col space-y-4">
         <div className='flex items-center gap-4'>
           <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
@@ -125,12 +145,21 @@ export default function ChatPage() {
           </div>
         </div>
         <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
-          <ChatBox messages={messages} currentUser={user} csUser={users.cs} isCsTyping={isCsTyping} />
-          <MessageInput
-            onSendMessage={handleSendMessage}
-            category={category}
-            onCategoryChange={setCategory}
-          />
+           {messages.length > 0 ? (
+            <>
+              <ChatBox messages={messages} currentUser={user} csUser={users.cs} isCsTyping={isCsTyping} />
+              <MessageInput
+                onSendMessage={handleSendMessage}
+                category={category}
+                onCategoryChange={() => {}}
+                isCategoryDisabled={true}
+              />
+            </>
+          ) : (
+            <div className="flex flex-1 items-center justify-center">
+              <p className="text-muted-foreground">Memulai sesi konsultasi...</p>
+            </div>
+          )}
         </Card>
         <FeedbackModal
           isOpen={showFeedbackModal}
