@@ -14,7 +14,7 @@ export default function RegisterPage() {
             Buat Akun Baru
           </h1>
           <p className="text-sm text-muted-foreground">
-            Masukkan detail Anda untuk membuat akun
+            Masukan detail USSIans untuk membuat akun
           </p>
         </div>
         <RegisterForm />
