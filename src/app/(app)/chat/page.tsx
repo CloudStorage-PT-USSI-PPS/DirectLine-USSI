@@ -130,7 +130,7 @@ export default function ChatPage() {
         id: `cs-msg-${Date.now()}`,
         author: 'cs',
         content: 'Baik, terima kasih atas informasinya. Kami sedang memeriksa masalah Anda.',
-        timestamp: new date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       };
       addMessage(csReply);
       setIsCsTyping(false);
