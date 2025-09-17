@@ -26,7 +26,7 @@ export default function ChatPage() {
         {
           id: 'welcome-msg',
           author: 'system',
-          content: `Halo ${user.name}, selamat datang di DirectLine. Silakan jelaskan masalah Anda.`,
+          content: `Halo USSIANS, selamat datang di DirectLine. Silakan jelaskan masalah Anda.`,
           timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
