@@ -39,7 +39,7 @@ export function StartConsultationModal({ isOpen, onClose, onSubmit }: StartConsu
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Mulai Sesi Konsultasi</DialogTitle>
           <DialogDescription>

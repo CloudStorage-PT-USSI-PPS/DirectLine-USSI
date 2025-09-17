@@ -131,10 +131,7 @@ export default function ChatPage() {
     <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
       <StartConsultationModal 
         isOpen={showStartModal}
-        onClose={() => {
-            // If user closes modal without starting, you might want to redirect or show a message
-            // For now, we'll just keep it open.
-        }}
+        onClose={() => setShowStartModal(false)}
         onSubmit={handleStartConsultation}
       />
       <div className="w-full max-w-4xl flex h-full flex-col space-y-4">
