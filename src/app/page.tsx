@@ -14,7 +14,11 @@ export default function Gate() {
   useEffect(() => {
     if (!loading) {
       if (user) {
-        router.push("/dashboard");
+        if (user.role === 'client') {
+          router.push("/chat");
+        } else {
+          router.push("/dashboard");
+        }
       } else {
         router.push("/login");
       }
