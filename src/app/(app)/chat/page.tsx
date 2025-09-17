@@ -9,6 +9,7 @@ import { FeedbackModal } from '@/components/chat/feedback-modal';
 import { users } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { initiateConsultationAnalysis } from '@/lib/actions';
+import { Card } from '@/components/ui/card';
 
 export default function ChatPage() {
   const { user } = useAuth();
