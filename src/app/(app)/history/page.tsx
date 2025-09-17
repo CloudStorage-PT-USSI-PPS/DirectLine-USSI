@@ -14,31 +14,29 @@ export default function HistoryPage() {
 
       <div className="grid gap-4">
         {chatHistory.map((chat) => (
-          <Link key={chat.id} href={`/history/${chat.id}`} legacyBehavior>
-            <a className="block">
-              <Card className="rounded-2xl shadow-md hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0">
-                  <div className="grid gap-1.5">
-                    <CardTitle className="text-lg">Konsultasi {chat.date}</CardTitle>
-                    <CardDescription>
-                      {chat.messages.length} pesan dengan {chat.cs?.name}
-                    </CardDescription>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <Badge 
-                      variant={
-                        chat.category === 'Kritis' ? 'destructive' :
-                        chat.category === 'Tinggi' ? 'default' : 'secondary'
-                      }
-                      className="capitalize"
-                    >
-                      {chat.category}
-                    </Badge>
-                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                </CardHeader>
-              </Card>
-            </a>
+          <Link key={chat.id} href={`/history/${chat.id}`} className="block">
+            <Card className="rounded-2xl shadow-md hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                <div className="grid gap-1.5">
+                  <CardTitle className="text-lg">Konsultasi {chat.date}</CardTitle>
+                  <CardDescription>
+                    {chat.messages.length} pesan dengan {chat.cs?.name}
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Badge 
+                    variant={
+                      chat.category === 'Kritis' ? 'destructive' :
+                      chat.category === 'Tinggi' ? 'default' : 'secondary'
+                    }
+                    className="capitalize"
+                  >
+                    {chat.category}
+                  </Badge>
+                  <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                </div>
+              </CardHeader>
+            </Card>
           </Link>
         ))}
         {chatHistory.length === 0 && (
