@@ -22,6 +22,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Nama wajib diisi.' }),
+  bprName: z.string().min(1, { message: 'Nama BPR wajib diisi.' }),
   email: z.string().email({ message: 'Format email tidak valid.' }).min(1, { message: 'Email wajib diisi.' }),
   password: z.string().min(6, { message: 'Password minimal 6 karakter.' }),
 });
@@ -37,6 +38,7 @@ export function RegisterForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
+      bprName: '',
       email: '',
       password: '',
     },
@@ -73,6 +75,23 @@ export function RegisterForm() {
               <FormControl>
                 <Input
                   placeholder="Nama Lengkap Anda"
+                  disabled={isLoading}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="bprName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nama BPR</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Nama Bank Perkreditan Rakyat"
                   disabled={isLoading}
                   {...field}
                 />
