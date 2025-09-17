@@ -11,7 +11,7 @@ export default function LoginPage() {
             <Logo />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">
-            Selamat Datang Kembali
+            Selamat Datang USSIans
           </h1>
           <p className="text-sm text-muted-foreground">
             PT USSI Siap Melayani dengan sepenuh hati
