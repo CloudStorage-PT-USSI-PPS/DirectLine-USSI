@@ -116,26 +116,28 @@ export default function ChatPage() {
   if (!user) return null;
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col space-y-4">
-      <div className='flex items-center gap-4'>
-        <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-          <MessageSquare className="h-6 w-6" />
-          <h1>Ruang Konsultasi</h1>
+    <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
+      <div className="w-full max-w-4xl flex h-full flex-col space-y-4">
+        <div className='flex items-center gap-4'>
+          <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+            <MessageSquare className="h-6 w-6" />
+            <h1>Ruang Konsultasi</h1>
+          </div>
         </div>
-      </div>
-      <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
-        <ChatBox messages={messages} currentUser={user} csUser={users.cs} isCsTyping={isCsTyping} />
-        <MessageInput
-          onSendMessage={handleSendMessage}
-          category={category}
-          onCategoryChange={setCategory}
+        <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
+          <ChatBox messages={messages} currentUser={user} csUser={users.cs} isCsTyping={isCsTyping} />
+          <MessageInput
+            onSendMessage={handleSendMessage}
+            category={category}
+            onCategoryChange={setCategory}
+          />
+        </Card>
+        <FeedbackModal
+          isOpen={showFeedbackModal}
+          onClose={() => setShowFeedbackModal(false)}
+          onSubmit={handleFeedbackSubmit}
         />
-      </Card>
-      <FeedbackModal
-        isOpen={showFeedbackModal}
-        onClose={() => setShowFeedbackModal(false)}
-        onSubmit={handleFeedbackSubmit}
-      />
+      </div>
     </div>
   );
 }
