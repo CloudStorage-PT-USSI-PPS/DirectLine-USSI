@@ -136,7 +136,7 @@ export function RegisterForm() {
             </FormItem>
           )}
         />
-        <Button disabled={isLoading} className="ml-auto w-full" type="submit">
+        <Button disabled={isLoading} className="w-full" type="submit" size="lg">
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Buat Akun
         </Button>

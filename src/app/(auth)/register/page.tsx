@@ -1,33 +1,37 @@
 import { RegisterForm } from '@/components/auth/register-form';
 import { Logo } from '@/components/layout/logo';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 
 export default function RegisterPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
-      <div className="mx-auto flex w-full animate-in fade-in-0 zoom-in-95 duration-300 flex-col justify-center space-y-6 sm:w-[350px]">
-        <div className="flex flex-col space-y-2 text-center">
-          <div className="mx-auto">
-            <Logo />
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent -z-0"/>
+      <Card className="relative z-10 w-full max-w-sm animate-in fade-in-0 zoom-in-95 duration-300 shadow-2xl rounded-2xl">
+        <CardHeader className="text-center">
+            <div className='mx-auto mb-4'>
+                <Logo />
+            </div>
+            <CardTitle className="text-2xl font-semibold tracking-tight">
             Buat Akun Baru
-          </h1>
-          <p className="text-sm text-muted-foreground">
+          </CardTitle>
+          <CardDescription>
             Masukan detail USSIans untuk membuat akun
-          </p>
-        </div>
-        <RegisterForm />
-        <p className="px-8 text-center text-sm text-muted-foreground">
-          Sudah punya akun?{' '}
-          <Link
-            href="/login"
-            className="underline underline-offset-4 hover:text-primary"
-          >
-            Masuk di sini
-          </Link>
-        </p>
-      </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+            <RegisterForm />
+            <p className="mt-6 text-center text-sm text-muted-foreground">
+                Sudah punya akun?{' '}
+                <Link
+                    href="/login"
+                    className="font-semibold text-primary underline-offset-4 hover:underline"
+                >
+                    Masuk di sini
+                </Link>
+            </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

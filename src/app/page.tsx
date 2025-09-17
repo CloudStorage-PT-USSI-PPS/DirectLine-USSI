@@ -1,9 +1,11 @@
+
 "use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Logo } from "@/components/layout/logo";
 
 export default function Gate() {
   const { user, loading } = useAuth();
@@ -21,11 +23,10 @@ export default function Gate() {
 
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">
-      <div className="flex flex-col items-center gap-4">
-        <Skeleton className="h-12 w-12 rounded-full" />
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-[250px]" />
-          <Skeleton className="h-4 w-[200px]" />
+      <div className="flex flex-col items-center gap-4 animate-pulse">
+        <Logo />
+        <div className="space-y-2 text-center">
+            <p className="text-sm text-muted-foreground">Memuat sesi Anda...</p>
         </div>
       </div>
     </div>

@@ -56,7 +56,7 @@ export function LoginForm() {
         title: 'Login Berhasil',
         description: 'Anda akan diarahkan ke dashboard.',
       });
-      router.push('/dashboard');
+      router.push('/');
     } else {
       toast({
         title: 'Login Gagal',
@@ -108,7 +108,7 @@ export function LoginForm() {
             </FormItem>
           )}
         />
-        <Button disabled={isLoading} className="ml-auto w-full" type="submit">
+        <Button disabled={isLoading} className="w-full" type="submit" size="lg">
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Masuk
         </Button>

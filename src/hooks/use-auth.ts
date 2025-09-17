@@ -33,7 +33,7 @@ export function useAuth() {
       return true;
     }
     // Simulate client login for any email
-    const clientUser = users.client;
+    const clientUser = { ...users.client, email: email, name: email.split('@')[0] };
     setUser(clientUser);
     localStorage.setItem(AUTH_KEY, JSON.stringify(clientUser));
     return true;
