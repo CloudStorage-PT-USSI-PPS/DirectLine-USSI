@@ -7,6 +7,7 @@ export const users: { [key: string]: User } = {
     email: 'budi.client@example.com',
     avatar: 'https://i.pravatar.cc/150?u=client',
     role: 'client',
+    bprName: 'BPR Mitra Sejahtera',
   },
   cs: {
     id: 'cs-1',

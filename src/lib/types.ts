@@ -4,6 +4,7 @@ export type User = {
   email: string;
   avatar: string;
   role: 'client' | 'cs';
+  bprName?: string;
 };
 
 export type ChatMessage = {

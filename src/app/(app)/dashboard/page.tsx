@@ -1,7 +1,7 @@
 
 'use client';
 import Link from 'next/link';
-import { ArrowRight, MessageSquare, Clock, Users, BarChart, Paperclip } from 'lucide-react';
+import { ArrowRight, MessageSquare, Clock, Users, BarChart, Paperclip, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -87,6 +87,7 @@ export default function CSDashboardPage() {
                 <TableHeader>
                     <TableRow>
                     <TableHead>Klien</TableHead>
+                    <TableHead className="hidden md:table-cell">Asal BPR</TableHead>
                     <TableHead className="hidden sm:table-cell">Tanggal</TableHead>
                     <TableHead>Kategori</TableHead>
                     <TableHead className="hidden lg:table-cell">Pesan Awal</TableHead>
@@ -100,6 +101,12 @@ export default function CSDashboardPage() {
                             <TableCell>
                                 <div className="font-medium">{chat.client.name}</div>
                                 <div className="text-sm text-muted-foreground hidden md:inline">{chat.client.email}</div>
+                            </TableCell>
+                             <TableCell className="hidden md:table-cell">
+                                <div className="flex items-center gap-2">
+                                  <Building className="h-4 w-4 text-muted-foreground"/>
+                                  <span>{chat.client.bprName || '-'}</span>
+                                </div>
                             </TableCell>
                             <TableCell className="hidden sm:table-cell">{chat.date}</TableCell>
                             <TableCell>

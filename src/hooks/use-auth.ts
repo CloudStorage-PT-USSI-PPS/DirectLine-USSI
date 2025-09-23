@@ -40,7 +40,8 @@ export function useAuth() {
         email: email, 
         name: email.split('@')[0], 
         avatar: `https://i.pravatar.cc/150?u=${email}`,
-        role: 'client' 
+        role: 'client',
+        bprName: 'BPR Nasabah Baru' // Default BPR for new users
     };
     setUser(clientUser);
     localStorage.setItem(AUTH_KEY, JSON.stringify(clientUser));
