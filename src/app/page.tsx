@@ -1,10 +1,10 @@
 
+
 "use client";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Logo } from "@/components/layout/logo";
 
 export default function Gate() {
@@ -14,6 +14,7 @@ export default function Gate() {
   useEffect(() => {
     if (!loading) {
       if (user) {
+        // Redirect based on role
         if (user.role === 'client') {
           router.push("/chat");
         } else {
@@ -36,3 +37,4 @@ export default function Gate() {
     </div>
   );
 }
+
