@@ -13,6 +13,8 @@ import { ChatRoom } from '@/components/chat/chat-room';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { CloseConsultationModal } from '@/components/chat/close-consultation-modal';
+
 
 const ACTIVE_SESSIONS_KEY = 'active-cs-sessions';
 const MAX_ACTIVE_CHATS = 3;
@@ -26,6 +28,8 @@ function ConsultationWorkspace() {
 
   const [allConsultations, setAllConsultations] = useState<Chat[]>([]);
   const [activeChats, setActiveChats] = useState<Chat[]>([]);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [chatToClose, setChatToClose] = useState<string | null>(null);
 
   // Load all available chats from sessionStorage and history
   useEffect(() => {
@@ -147,17 +151,30 @@ function ConsultationWorkspace() {
     };
 
     const handleCloseChat = (chatId: string) => {
-        const updatedChats = activeChats.filter(chat => chat.id !== chatId);
+        setChatToClose(chatId);
+        setShowCloseModal(true);
+    }
+    
+    const confirmCloseChat = (reason: string) => {
+        if (!chatToClose) return;
+
+        console.log(`Chat ${chatToClose} ditutup dengan alasan: ${reason}`);
+
+        const updatedChats = activeChats.filter(chat => chat.id !== chatToClose);
         setActiveChats(updatedChats);
 
         const updatedIds = updatedChats.map(chat => chat.id);
         sessionStorage.setItem(ACTIVE_SESSIONS_KEY, JSON.stringify(updatedIds));
 
-        const closedChat = activeChats.find(c => c.id === chatId);
+        const closedChat = activeChats.find(c => c.id === chatToClose);
         toast({
             title: "Sesi Ditutup",
             description: `Anda telah menutup sesi dengan ${closedChat?.client.name}.`
         });
+
+        // Reset modal state
+        setShowCloseModal(false);
+        setChatToClose(null);
     }
 
 
@@ -185,59 +202,69 @@ function ConsultationWorkspace() {
   }
 
   return (
-    <div className="flex flex-col gap-6 h-full">
-       <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
-            <MessageSquare className="h-7 w-7" />
-            <h1>Ruang Konsultasi Aktif</h1>
-        </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
-        {activeChats.map(chat => (
-          <Card key={chat.id} className="flex flex-col rounded-2xl shadow-md">
-            <CardHeader className="flex-row items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <Avatar>
-                        <AvatarImage src={chat.client.avatar} alt={chat.client.name} />
-                        <AvatarFallback>{chat.client.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <CardTitle className="text-base">{chat.client.name}</CardTitle>
-                        <p className="text-xs text-muted-foreground">{chat.client.email}</p>
+    <>
+        <div className="flex flex-col gap-6 h-full">
+        <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+                <MessageSquare className="h-7 w-7" />
+                <h1>Ruang Konsultasi Aktif</h1>
+            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
+            {activeChats.map(chat => (
+            <Card key={chat.id} className="flex flex-col rounded-2xl shadow-md">
+                <CardHeader className="flex-row items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Avatar>
+                            <AvatarImage src={chat.client.avatar} alt={chat.client.name} />
+                            <AvatarFallback>{chat.client.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                            <CardTitle className="text-base">{chat.client.name}</CardTitle>
+                            <p className="text-xs text-muted-foreground">{chat.client.email}</p>
+                        </div>
                     </div>
+                <div className="flex items-center gap-2">
+                    <Badge variant={
+                        chat.category === 'Kritis' ? 'destructive' :
+                        chat.category === 'Tinggi' ? 'default' : 'secondary'
+                    }>{chat.category}</Badge>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCloseChat(chat.id)}>
+                        <X className="h-4 w-4"/>
+                        <span className="sr-only">Tutup Sesi</span>
+                    </Button>
                 </div>
-              <div className="flex items-center gap-2">
-                <Badge variant={
-                    chat.category === 'Kritis' ? 'destructive' :
-                    chat.category === 'Tinggi' ? 'default' : 'secondary'
-                  }>{chat.category}</Badge>
-                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCloseChat(chat.id)}>
-                    <X className="h-4 w-4"/>
-                    <span className="sr-only">Tutup Sesi</span>
-                </Button>
-              </div>
-            </CardHeader>
-            <ChatRoom
-              messages={chat.messages}
-              user={chat.client} 
-              csUser={user} 
-              onSendMessage={(content, file) => handleSendMessage(chat.id, content, file)}
-              category={chat.category as ChatCategory}
-              onCategoryChange={(newCategory) => handleCategoryChange(chat.id, newCategory)}
-              isCategoryDisabled={false}
-            />
-          </Card>
-        ))}
-         {/* Placeholder for more chat rooms */}
-        {[...Array(Math.max(0, MAX_ACTIVE_CHATS - activeChats.length))].map((_, i) => (
-             <Card key={`placeholder-${i}`} className="rounded-2xl shadow-md flex items-center justify-center bg-muted/50">
-                 <div className="text-center text-muted-foreground p-8">
-                     <Info className="mx-auto h-8 w-8 mb-4"/>
-                    <p className="font-semibold">Slot Konsultasi Kosong</p>
-                    <p className="text-sm">Pilih klien dari dashboard untuk memulai.</p>
-                 </div>
-             </Card>
-        ))}
-      </div>
-    </div>
+                </CardHeader>
+                <ChatRoom
+                messages={chat.messages}
+                user={chat.client} 
+                csUser={user} 
+                onSendMessage={(content, file) => handleSendMessage(chat.id, content, file)}
+                category={chat.category as ChatCategory}
+                onCategoryChange={(newCategory) => handleCategoryChange(chat.id, newCategory)}
+                isCategoryDisabled={false}
+                />
+            </Card>
+            ))}
+            {/* Placeholder for more chat rooms */}
+            {[...Array(Math.max(0, MAX_ACTIVE_CHATS - activeChats.length))].map((_, i) => (
+                <Card key={`placeholder-${i}`} className="rounded-2xl shadow-md flex items-center justify-center bg-muted/50">
+                    <div className="text-center text-muted-foreground p-8">
+                        <Info className="mx-auto h-8 w-8 mb-4"/>
+                        <p className="font-semibold">Slot Konsultasi Kosong</p>
+                        <p className="text-sm">Pilih klien dari dashboard untuk memulai.</p>
+                    </div>
+                </Card>
+            ))}
+        </div>
+        </div>
+        <CloseConsultationModal
+            isOpen={showCloseModal}
+            onClose={() => {
+                setShowCloseModal(false);
+                setChatToClose(null);
+            }}
+            onSubmit={confirmCloseChat}
+        />
+    </>
   );
 }
 
