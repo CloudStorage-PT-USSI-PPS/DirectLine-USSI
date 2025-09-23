@@ -21,7 +21,6 @@ import {
   } from "@/components/ui/table"
 import { Badge } from '@/components/ui/badge';
 import { chatHistory } from '@/lib/data';
-import { useEffect, useState } from 'react';
 import type { Chat } from '@/lib/types';
 
 
@@ -34,28 +33,23 @@ const stats = [
 ];
 
 export default function CSDashboardPage() {
-    // This component now reads directly from sessionStorage on each render
-    // to ensure data is always fresh.
     let allConsultations: Chat[] = [];
     if (typeof window !== 'undefined') { // Ensure code runs only on the client
         try {
             const newConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
             
-            // Combine new consultations with the existing history, avoiding duplicates
             const combined = [...newConsultations, ...chatHistory];
             const uniqueConsultations = Array.from(new Set(combined.map(c => c.id)))
                 .map(id => combined.find(c => c.id === id)!);
                 
-            allConsultations = uniqueConsultations;
+            allConsultations = uniqueConsultations.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id.localeCompare(a.id));
         } catch (e) {
             console.error("Failed to load consultations from sessionStorage", e);
-            allConsultations = chatHistory; // Fallback to original history
+            allConsultations = chatHistory;
         }
     } else {
         allConsultations = chatHistory;
     }
-
-    const activeConsultations = allConsultations.slice(0, 5); // Show first 5 for example
 
   return (
     <div className="flex flex-col gap-6 md:gap-8">
@@ -100,7 +94,7 @@ export default function CSDashboardPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {activeConsultations.map((chat) => (
+                    {allConsultations.map((chat) => (
                         <TableRow key={chat.id}>
                             <TableCell>
                                 <div className="font-medium">{chat.client.name}</div>
@@ -156,5 +150,3 @@ export default function CSDashboardPage() {
     </div>
   );
 }
-
-    
