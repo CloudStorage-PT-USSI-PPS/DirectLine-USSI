@@ -118,7 +118,7 @@ export default function ChatPage() {
     setActiveChat(newChat); // Set as the active chat for this session
   
     try {
-      const existingChats = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+      const existingChats: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
       sessionStorage.setItem('new-consultations', JSON.stringify([newChat, ...existingChats]));
     } catch (e) {
       console.error("Failed to save new consultation to sessionStorage", e);
@@ -250,15 +250,17 @@ export default function ChatPage() {
             <div className="flex flex-1 gap-6 overflow-hidden">
               <div className="flex-1 flex flex-col h-full">
                 {hasSessionStarted || messages.length > 0 ? (
-                  <ChatRoom
-                    messages={messages}
-                    user={user}
-                    csUser={activeChat?.cs || users.cs}
-                    onSendMessage={handleSendMessage}
-                    isCategoryDisabled={true}
-                    category={category}
-                    onCategoryChange={setCategory}
-                  />
+                   <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
+                      <ChatRoom
+                        messages={messages}
+                        user={user}
+                        csUser={activeChat?.cs || users.cs}
+                        onSendMessage={handleSendMessage}
+                        isCategoryDisabled={true}
+                        category={category}
+                        onCategoryChange={setCategory}
+                      />
+                  </Card>
                 ) : (
                   <Card className="flex flex-1 items-center justify-center p-4 text-center rounded-2xl shadow-md">
                     <p className="text-muted-foreground">Memuat sesi konsultasi Anda...</p>
@@ -277,3 +279,5 @@ export default function ChatPage() {
     </>
   );
 }
+
+    
