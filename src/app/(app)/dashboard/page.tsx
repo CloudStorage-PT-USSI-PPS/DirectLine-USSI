@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { ArrowRight, MessageSquare, Clock, Users, BarChart } from 'lucide-react';
+import { ArrowRight, MessageSquare, Clock, Users, BarChart, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -41,7 +41,7 @@ export default function CSDashboardPage() {
             </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {stats.map((stat) => (
                 <Card key={stat.title} className="rounded-2xl shadow-md">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -56,19 +56,20 @@ export default function CSDashboardPage() {
             ))}
         </div>
       
-      <Card className="rounded-2xl shadow-md">
+      <Card className="rounded-2xl shadow-md overflow-hidden">
         <CardHeader>
           <CardTitle>Permintaan Konsultasi Masuk</CardTitle>
           <CardDescription>Berikut adalah daftar konsultasi terbaru yang membutuhkan perhatian Anda.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
             <Table>
                 <TableHeader>
                     <TableRow>
                     <TableHead>Klien</TableHead>
                     <TableHead className="hidden sm:table-cell">Tanggal</TableHead>
                     <TableHead>Kategori</TableHead>
-                    <TableHead className="hidden md:table-cell">Pesan Awal</TableHead>
+                    <TableHead className="hidden lg:table-cell">Pesan Awal</TableHead>
+                    <TableHead className="hidden md:table-cell">Lampiran</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                     </TableRow>
                 </TableHeader>
@@ -91,7 +92,15 @@ export default function CSDashboardPage() {
                                     {chat.category}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="hidden md:table-cell max-w-[200px] lg:max-w-xs truncate">{chat.messages[0].content}</TableCell>
+                            <TableCell className="hidden lg:table-cell max-w-xs truncate">{chat.messages[0].content}</TableCell>
+                            <TableCell className="hidden md:table-cell">
+                                {chat.messages[0].file && (
+                                    <div className='flex items-center justify-center'>
+                                        <Paperclip className="h-4 w-4" />
+                                        <span className='sr-only'>Ada Lampiran</span>
+                                    </div>
+                                )}
+                            </TableCell>
                             <TableCell className="text-right">
                                 <Button asChild size="sm">
                                     <Link href={`/chat?session=${chat.id}`}>
@@ -104,7 +113,7 @@ export default function CSDashboardPage() {
                 </TableBody>
             </Table>
         </CardContent>
-        <CardFooter className="justify-end pt-4">
+        <CardFooter className="justify-end pt-4 border-t">
             <Button asChild variant="outline">
                 <Link href="/history">
                     Lihat Semua Riwayat <ArrowRight className="ml-2 h-4 w-4" />
