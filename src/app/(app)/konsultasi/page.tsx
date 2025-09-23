@@ -1,27 +1,33 @@
 
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense, useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { chatHistory, users } from '@/lib/data';
 import type { ChatMessage, ChatCategory, Chat } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MessageSquare, Users, Info } from 'lucide-react';
+import { MessageSquare, Users, Info, X } from 'lucide-react';
 import { ChatRoom } from '@/components/chat/chat-room';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+
+const ACTIVE_SESSIONS_KEY = 'active-cs-sessions';
+const MAX_ACTIVE_CHATS = 3;
 
 function ConsultationWorkspace() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { user } = useAuth();
   const { toast } = useToast();
-  const sessionId = searchParams.get('session');
+  const newSessionId = searchParams.get('session');
 
-  // Combine sessionStorage and initial history
   const [allConsultations, setAllConsultations] = useState<Chat[]>([]);
-  
+  const [activeChats, setActiveChats] = useState<Chat[]>([]);
+
+  // Load all available chats from sessionStorage and history
   useEffect(() => {
     try {
         const newConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
@@ -35,14 +41,45 @@ function ConsultationWorkspace() {
     }
   }, []);
 
-  const activeChat = sessionId ? allConsultations.find(c => c.id === sessionId) : null;
-  const [activeChats, setActiveChats] = useState(activeChat ? [activeChat] : []);
 
-  // Update activeChats when the source of truth changes
+  // Effect to manage active sessions
   useEffect(() => {
-    const chat = sessionId ? allConsultations.find(c => c.id === sessionId) : null;
-    setActiveChats(chat ? [chat] : []);
-  }, [sessionId, allConsultations]);
+    if (allConsultations.length === 0) return;
+
+    let activeSessionIds: string[] = [];
+    try {
+      activeSessionIds = JSON.parse(sessionStorage.getItem(ACTIVE_SESSIONS_KEY) || '[]');
+    } catch (e) {
+      console.error('Failed to parse active sessions', e);
+      activeSessionIds = [];
+    }
+
+    // Add new session ID from URL if it exists and isn't already active
+    if (newSessionId && !activeSessionIds.includes(newSessionId)) {
+      if (activeSessionIds.length < MAX_ACTIVE_CHATS) {
+        activeSessionIds.unshift(newSessionId); // Add to the beginning
+      } else {
+        toast({
+            title: "Batas Maksimal Tercapai",
+            description: `Anda hanya dapat menangani ${MAX_ACTIVE_CHATS} konsultasi sekaligus.`,
+            variant: "destructive"
+        })
+      }
+      // Clean the URL
+      router.replace('/konsultasi');
+    }
+    
+    // Filter chats based on active IDs
+    const currentlyActiveChats = activeSessionIds
+        .map(id => allConsultations.find(chat => chat.id === id))
+        .filter((chat): chat is Chat => !!chat);
+
+    setActiveChats(currentlyActiveChats);
+
+    // Persist the updated list of IDs
+    sessionStorage.setItem(ACTIVE_SESSIONS_KEY, JSON.stringify(currentlyActiveChats.map(c => c.id)));
+
+  }, [newSessionId, allConsultations, router, toast]);
 
   const handleSendMessage = async (chatId: string, content: string, file?: File) => {
     if (!user) return;
@@ -54,13 +91,13 @@ function ConsultationWorkspace() {
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
     };
-
-    setActiveChats(currentChats =>
-      currentChats.map(chat =>
-        chat.id === chatId ? { ...chat, messages: [...chat.messages, newMessage] } : chat
-      )
+    
+    const updatedChats = activeChats.map(chat =>
+      chat.id === chatId ? { ...chat, messages: [...chat.messages, newMessage] } : chat
     );
+    setActiveChats(updatedChats);
 
+    // Simulate client reply
     return new Promise<void>(resolve => {
         setTimeout(() => {
           const clientReply: ChatMessage = {
@@ -69,13 +106,13 @@ function ConsultationWorkspace() {
             content: 'Baik, terima kasih atas responnya!',
             timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
           };
-    
-          setActiveChats(currentChats =>
-            currentChats.map(chat =>
-              chat.id === chatId ? { ...chat, messages: [...chat.messages, clientReply] } : chat
-            )
-          );
           
+          const finalChats = updatedChats.map(chat =>
+            chat.id === chatId ? { ...chat, messages: [...chat.messages, clientReply] } : chat
+          );
+          setActiveChats(finalChats);
+          
+          const activeChat = finalChats.find(c => c.id === chatId);
           toast({
               title: "Pesan Baru",
               description: `Klien ${activeChat?.client.name} telah membalas.`,
@@ -86,29 +123,42 @@ function ConsultationWorkspace() {
   };
 
     const handleCategoryChange = (chatId: string, newCategory: ChatCategory) => {
-        // Update local state for immediate UI feedback
-        setActiveChats(currentChats =>
-          currentChats.map(chat =>
+        const updatedChats = activeChats.map(chat =>
             chat.id === chatId ? { ...chat, category: newCategory } : chat
-          )
         );
+        setActiveChats(updatedChats);
 
-        // Persist the change to sessionStorage
         try {
             const existingChats: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-            const updatedChats = existingChats.map(chat => 
+            const updatedStorageChats = existingChats.map(chat => 
                 chat.id === chatId ? { ...chat, category: newCategory } : chat
             );
-            sessionStorage.setItem('new-consultations', JSON.stringify(updatedChats));
+            sessionStorage.setItem('new-consultations', JSON.stringify(updatedStorageChats));
         } catch (e) {
             console.error("Failed to update consultation in sessionStorage", e);
         }
-
-        toast({
-            title: "Kategori Diperbarui",
-            description: `Prioritas untuk chat dengan ${activeChat?.client.name} diubah menjadi "${newCategory}".`
-        });
+        const changedChat = activeChats.find(c => c.id === chatId);
+        if (changedChat) {
+             toast({
+                title: "Kategori Diperbarui",
+                description: `Prioritas untuk chat dengan ${changedChat.client.name} diubah menjadi "${newCategory}".`
+            });
+        }
     };
+
+    const handleCloseChat = (chatId: string) => {
+        const updatedChats = activeChats.filter(chat => chat.id !== chatId);
+        setActiveChats(updatedChats);
+
+        const updatedIds = updatedChats.map(chat => chat.id);
+        sessionStorage.setItem(ACTIVE_SESSIONS_KEY, JSON.stringify(updatedIds));
+
+        const closedChat = activeChats.find(c => c.id === chatId);
+        toast({
+            title: "Sesi Ditutup",
+            description: `Anda telah menutup sesi dengan ${closedChat?.client.name}.`
+        });
+    }
 
 
   if (!user || user.role !== 'cs') {
@@ -140,8 +190,7 @@ function ConsultationWorkspace() {
             <MessageSquare className="h-7 w-7" />
             <h1>Ruang Konsultasi Aktif</h1>
         </div>
-      {/* This will eventually be a tabbed or multi-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
         {activeChats.map(chat => (
           <Card key={chat.id} className="flex flex-col rounded-2xl shadow-md">
             <CardHeader className="flex-row items-center justify-between">
@@ -155,15 +204,21 @@ function ConsultationWorkspace() {
                         <p className="text-xs text-muted-foreground">{chat.client.email}</p>
                     </div>
                 </div>
-              <Badge variant={
-                  chat.category === 'Kritis' ? 'destructive' :
-                  chat.category === 'Tinggi' ? 'default' : 'secondary'
-                }>{chat.category}</Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant={
+                    chat.category === 'Kritis' ? 'destructive' :
+                    chat.category === 'Tinggi' ? 'default' : 'secondary'
+                  }>{chat.category}</Badge>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCloseChat(chat.id)}>
+                    <X className="h-4 w-4"/>
+                    <span className="sr-only">Tutup Sesi</span>
+                </Button>
+              </div>
             </CardHeader>
             <ChatRoom
               messages={chat.messages}
-              user={chat.client} // The "current user" from the client's perspective
-              csUser={user} // The logged-in CS agent
+              user={chat.client} 
+              csUser={user} 
               onSendMessage={(content, file) => handleSendMessage(chat.id, content, file)}
               category={chat.category as ChatCategory}
               onCategoryChange={(newCategory) => handleCategoryChange(chat.id, newCategory)}
@@ -172,7 +227,7 @@ function ConsultationWorkspace() {
           </Card>
         ))}
          {/* Placeholder for more chat rooms */}
-        {[...Array(Math.max(0, 3 - activeChats.length))].map((_, i) => (
+        {[...Array(Math.max(0, MAX_ACTIVE_CHATS - activeChats.length))].map((_, i) => (
              <Card key={`placeholder-${i}`} className="rounded-2xl shadow-md flex items-center justify-center bg-muted/50">
                  <div className="text-center text-muted-foreground p-8">
                      <Info className="mx-auto h-8 w-8 mb-4"/>
@@ -194,3 +249,5 @@ export default function KonsultasiPage() {
         </Suspense>
     )
 }
+
+    
