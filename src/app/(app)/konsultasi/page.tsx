@@ -66,6 +66,19 @@ function ConsultationWorkspace() {
     });
   };
 
+    const handleCategoryChange = (chatId: string, newCategory: ChatCategory) => {
+        setActiveChats(currentChats =>
+        currentChats.map(chat =>
+            chat.id === chatId ? { ...chat, category: newCategory } : chat
+        )
+        );
+        toast({
+            title: "Kategori Diperbarui",
+            description: `Prioritas untuk chat dengan ${activeChat?.client.name} diubah menjadi "${newCategory}".`
+        })
+    };
+
+
   if (!user || user.role !== 'cs') {
     return (
         <div className="flex h-full items-center justify-center">
@@ -121,8 +134,8 @@ function ConsultationWorkspace() {
               csUser={user} // The logged-in CS agent
               onSendMessage={(content, file) => handleSendMessage(chat.id, content, file)}
               category={chat.category as ChatCategory}
-              onCategoryChange={() => {}} // Category is read-only here
-              isCategoryDisabled={true}
+              onCategoryChange={(newCategory) => handleCategoryChange(chat.id, newCategory)}
+              isCategoryDisabled={false}
             />
           </Card>
         ))}

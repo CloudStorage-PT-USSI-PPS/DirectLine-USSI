@@ -52,17 +52,37 @@ export function MessageInput({ onSendMessage, category, onCategoryChange, isCate
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="border-t bg-background p-4 rounded-b-2xl">
-      {attachedFile && (
-          <div className="mb-2 flex items-center justify-between rounded-lg border p-2 text-sm">
-            <div className="flex items-center gap-2 truncate">
-              <Paperclip className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{attachedFile.name}</span>
+      <div className="flex items-center justify-between gap-4 mb-3">
+        <div className="flex-1">
+           <Select 
+              value={category} 
+              onValueChange={(value: ChatCategory) => onCategoryChange(value)}
+              disabled={isCategoryDisabled}
+            >
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Pilih kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Kritis">Kritis</SelectItem>
+                <SelectItem value="Tinggi">Tinggi</SelectItem>
+                <SelectItem value="Sedang">Sedang</SelectItem>
+                <SelectItem value="Rendah">Rendah</SelectItem>
+              </SelectContent>
+            </Select>
+        </div>
+        {attachedFile && (
+            <div className="flex items-center justify-between rounded-lg border p-2 text-sm max-w-xs">
+              <div className="flex items-center gap-2 truncate">
+                <Paperclip className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{attachedFile.name}</span>
+              </div>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setAttachedFile(null)}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setAttachedFile(null)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-      )}
+        )}
+      </div>
+      <Separator className="mb-3"/>
       <div className="relative flex w-full items-start gap-4">
         <Textarea
           {...register('message')}
