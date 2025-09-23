@@ -103,7 +103,7 @@ export default function CSDashboardPage() {
                             </TableCell>
                             <TableCell className="text-right">
                                 <Button asChild size="sm">
-                                    <Link href={`/chat?session=${chat.id}`}>
+                                    <Link href={`/konsultasi?session=${chat.id}`}>
                                         Tanggapi
                                     </Link>
                                 </Button>

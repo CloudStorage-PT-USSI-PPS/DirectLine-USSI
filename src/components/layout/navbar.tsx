@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -23,6 +24,7 @@ import { useAuth } from '@/hooks/use-auth';
 
 const allNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['cs'] },
+  { href: '/konsultasi', label: 'Konsultasi', icon: MessageSquare, roles: ['cs'] },
   { href: '/chat', label: 'Chat', icon: MessageSquare, roles: ['client'] },
   { href: '/history', label: 'Riwayat', icon: History, roles: ['client', 'cs'] },
 ];

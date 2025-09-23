@@ -15,6 +15,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { MessageSquare, Users, Circle } from 'lucide-react';
 import { useChatSession } from '@/components/providers/chat-session-provider';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ChatRoom } from '@/components/chat/chat-room';
 
 
 const AvailableCS = ({ csList }: { csList: User[] }) => (
@@ -25,7 +26,7 @@ const AvailableCS = ({ csList }: { csList: User[] }) => (
         CS Tersedia
       </CardTitle>
     </CardHeader>
-    <CardContent className="space-y-4">
+    <CardContent className="space-y-4 pt-6">
       {csList.map(cs => (
         <div key={cs.id} className="flex items-center gap-3">
           <Avatar className="h-10 w-10">
@@ -48,11 +49,10 @@ const AvailableCS = ({ csList }: { csList: User[] }) => (
 export default function ChatPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { hasSessionStarted, startSession, messages, addMessage, addMessages, clearMessages } = useChatSession();
+  const { hasSessionStarted, startSession, messages, addMessage } = useChatSession();
   const [category, setCategory] = useState<ChatCategory>('Sedang');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [showStartModal, setShowStartModal] = useState(false);
-  const [isCsTyping, setIsCsTyping] = useState(false);
 
   const csList = Object.values(users).filter(u => u.role === 'cs');
 
@@ -94,11 +94,10 @@ export default function ChatPage() {
       author: 'client',
       content,
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-      ...(file && { file: { name: file.name, url: '#' } }),
+      ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
     };
 
     addMessage(newMessage);
-    setIsCsTyping(true);
 
     // Only analyze the very first client message of the session
     const isFirstClientMessage = messages.filter(m => m.author === 'client').length === 0;
@@ -126,35 +125,40 @@ export default function ChatPage() {
       }
     }
 
+    // Simulate CS reply after analysis or immediately
+    const replyDelay = isFirstClientMessage ? 2500 : 1000;
+    
     // Simulate CS reply
-    setTimeout(() => {
-      const csReply: ChatMessage = {
-        id: `cs-msg-${Date.now()}`,
-        author: 'cs',
-        content: 'Baik, terima kasih atas informasinya. Kami sedang memeriksa masalah Anda.',
-        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-      };
-      addMessage(csReply);
-      setIsCsTyping(false);
-      toast({
-        title: "Pesan Baru",
-        description: "Customer Support telah membalas.",
-      });
-      
-      // Simulate end of chat and show feedback modal
-      if (content.toLowerCase().includes('terima kasih')) {
+    return new Promise<void>(resolve => {
         setTimeout(() => {
-          const endMessage: ChatMessage = {
-            id: `end-${Date.now()}`,
-            author: 'system',
-            content: 'Sesi konsultasi telah berakhir. Mohon berikan feedback Anda.',
-            timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-          };
-          addMessage(endMessage);
-          setShowFeedbackModal(true);
-        }, 2000);
-      }
-    }, 2500);
+            const csReply: ChatMessage = {
+              id: `cs-msg-${Date.now()}`,
+              author: 'cs',
+              content: 'Baik, terima kasih atas informasinya. Kami sedang memeriksa masalah Anda.',
+              timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+            };
+            addMessage(csReply);
+            toast({
+              title: "Pesan Baru",
+              description: "Customer Support telah membalas.",
+            });
+            
+            // Simulate end of chat and show feedback modal
+            if (content.toLowerCase().includes('terima kasih')) {
+              setTimeout(() => {
+                const endMessage: ChatMessage = {
+                  id: `end-${Date.now()}`,
+                  author: 'system',
+                  content: 'Sesi konsultasi telah berakhir. Mohon berikan feedback Anda.',
+                  timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+                };
+                addMessage(endMessage);
+                setShowFeedbackModal(true);
+              }, 2000);
+            }
+            resolve();
+          }, replyDelay);
+    });
   };
 
   const handleFeedbackSubmit = (rating: number, description: string) => {
@@ -164,10 +168,8 @@ export default function ChatPage() {
       description: 'Feedback Anda telah kami terima.',
     });
     setShowFeedbackModal(false);
-    // Optionally reset chat
-    // clearMessages();
   };
-
+  
   if (!user) return null;
 
   return (
@@ -177,31 +179,31 @@ export default function ChatPage() {
         onClose={handleCloseModal}
         onSubmit={handleStartConsultation}
       />
-      <div className="flex h-[calc(100vh-8rem-2rem)] flex-col items-center">
+      <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
         <div className="w-full max-w-6xl flex flex-col gap-6 h-full">
             <div className="flex items-center justify-center gap-2 text-2xl font-bold tracking-tight">
               <MessageSquare className="h-6 w-6" />
               <h1>Ruang Konsultasi</h1>
             </div>
             <div className="flex flex-1 gap-6 overflow-hidden">
-                <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
-                  {!hasSessionStarted && messages.length === 0 ? (
-                    <div className="flex flex-1 items-center justify-center p-4 text-center">
-                      <p className="text-muted-foreground">Memulai sesi konsultasi... Silakan mulai dari pop-up yang muncul.</p>
-                    </div>
-                  ) : (
-                    <>
-                      <ChatBox messages={messages} currentUser={user} csUser={users.cs} isCsTyping={isCsTyping} />
-                      <MessageInput
-                        onSendMessage={handleSendMessage}
-                        category={category}
-                        onCategoryChange={() => {}}
-                        isCategoryDisabled={true}
-                      />
-                    </>
-                  )}
-                </Card>
-                <AvailableCS csList={csList} />
+              <div className="flex-1 flex flex-col h-full">
+                {!hasSessionStarted && messages.length === 0 ? (
+                  <Card className="flex flex-1 items-center justify-center p-4 text-center rounded-2xl shadow-md">
+                    <p className="text-muted-foreground">Memulai sesi konsultasi... Silakan mulai dari pop-up yang muncul.</p>
+                  </Card>
+                ) : (
+                  <ChatRoom
+                    messages={messages}
+                    user={user}
+                    csUser={users.cs} // Default CS for simulation
+                    onSendMessage={handleSendMessage}
+                    isCategoryDisabled={true}
+                    category={category}
+                    onCategoryChange={setCategory}
+                  />
+                )}
+              </div>
+              <AvailableCS csList={csList} />
             </div>
         </div>
         <FeedbackModal
