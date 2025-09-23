@@ -3,28 +3,36 @@
 import { useEffect, type ReactNode } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
+import { Logo } from '../layout/logo';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
-    if (!loading && !user && pathname !== '/login') {
-      router.push('/login');
-    }
-  }, [user, loading, router, pathname]);
+  const isAuthPage = pathname === '/login' || pathname === '/register';
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading) {
+      if (!user && !isAuthPage) {
+        router.push('/login');
+      } else if (user && isAuthPage) {
+        router.push('/');
+      }
+    }
+  }, [user, loading, router, pathname, isAuthPage]);
+
+  if (loading || (!user && !isAuthPage)) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4 animate-pulse">
+          <Logo />
+          <div className="space-y-2 text-center">
+            <p className="text-sm text-muted-foreground">Memuat sesi Anda...</p>
+          </div>
+        </div>
       </div>
     );
-  }
-
-  if (!user && pathname !== '/login') {
-    return null; // or a loading spinner
   }
 
   return <>{children}</>;
