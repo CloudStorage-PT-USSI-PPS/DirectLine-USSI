@@ -9,7 +9,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <ChatSessionProvider>
         <div className="min-h-screen bg-background font-sans antialiased">
           <Navbar />
-          <main className="container mx-auto px-4 py-8">{children}</main>
+          <main className="container mx-auto max-w-7xl px-4 py-8">{children}</main>
         </div>
       </ChatSessionProvider>
     </AuthProvider>
