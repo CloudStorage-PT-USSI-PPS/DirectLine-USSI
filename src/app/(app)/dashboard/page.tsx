@@ -1,4 +1,5 @@
 
+'use client';
 import Link from 'next/link';
 import { ArrowRight, MessageSquare, Clock, Users, BarChart, Paperclip } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,9 @@ import {
   } from "@/components/ui/table"
 import { Badge } from '@/components/ui/badge';
 import { chatHistory } from '@/lib/data';
+import { useEffect, useState } from 'react';
+import type { Chat } from '@/lib/types';
+
 
 // Mock data for stats
 const stats = [
@@ -30,7 +34,24 @@ const stats = [
 ];
 
 export default function CSDashboardPage() {
-    const activeConsultations = chatHistory.slice(0, 5); // Show first 5 for example
+    const [allConsultations, setAllConsultations] = useState<Chat[]>([]);
+
+    useEffect(() => {
+        // This effect runs only on the client side
+        try {
+            const newConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+            // Combine new consultations with the existing history, avoiding duplicates
+            const combined = [...newConsultations, ...chatHistory];
+            const uniqueConsultations = Array.from(new Set(combined.map(c => c.id)))
+                .map(id => combined.find(c => c.id === id)!);
+            setAllConsultations(uniqueConsultations);
+        } catch (e) {
+            console.error("Failed to load consultations from sessionStorage", e);
+            setAllConsultations(chatHistory); // Fallback to original history
+        }
+    }, []);
+
+    const activeConsultations = allConsultations.slice(0, 5); // Show first 5 for example
 
   return (
     <div className="flex flex-col gap-6 md:gap-8">
@@ -50,7 +71,7 @@ export default function CSDashboardPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{stat.value}</div>
-                        <p className="text-xs text-muted-foreground">{stat.change} dari kemarin</p>
+                        <p className="text-xs text-muted-foreground">{stat.change} from kemarin</p>
                     </CardContent>
                 </Card>
             ))}

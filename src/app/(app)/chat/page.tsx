@@ -1,9 +1,8 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import type { ChatMessage, ChatCategory, User } from '@/lib/types';
+import type { ChatMessage, ChatCategory, User, Chat } from '@/lib/types';
 import { ChatBox } from '@/components/chat/chat-box';
 import { MessageInput } from '@/components/chat/message-input';
 import { FeedbackModal } from '@/components/chat/feedback-modal';
@@ -63,20 +62,51 @@ export default function ChatPage() {
   }, [user, hasSessionStarted]);
 
   const handleStartConsultation = (initialMessage: string, category: ChatCategory, file?: File) => {
-    startSession(); 
+    if (!user) return;
+  
+    startSession();
     setCategory(category);
     setShowStartModal(false);
-    
+  
+    const firstMessage: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      author: 'client',
+      content: initialMessage,
+      timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
+    };
+  
+    // Simulate saving the new chat to a shared place (like a database)
+    const newChat: Chat = {
+      id: `chat-${Date.now()}`,
+      category,
+      date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+      client: user,
+      cs: users.cs, // Assign a default CS for now
+      messages: [firstMessage], // Start with the first message
+      rating: undefined,
+    };
+  
+    try {
+      const existingChats = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+      sessionStorage.setItem('new-consultations', JSON.stringify([newChat, ...existingChats]));
+    } catch (e) {
+      console.error("Failed to save new consultation to sessionStorage", e);
+    }
+  
     const welcomeMessage: ChatMessage = {
       id: 'welcome-msg',
       author: 'system',
       content: `Halo USSIANS, selamat datang di DirectLine. Sesi Anda telah dimulai dengan prioritas "${category}".`,
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
     };
-
+  
+    // The welcome message should come first
     addMessage(welcomeMessage);
-    handleSendMessage(initialMessage, file);
+    // Then the user's first message
+    handleSendMessage(firstMessage.content, file, firstMessage);
   };
+  
 
   const handleCloseModal = () => {
     if (!hasSessionStarted) {
@@ -86,22 +116,27 @@ export default function ChatPage() {
   }
 
 
-  const handleSendMessage = async (content: string, file?: File) => {
-    if (!user || (!content.trim() && !file)) return;
-
-    const newMessage: ChatMessage = {
-      id: `msg-${Date.now()}`,
-      author: 'client',
-      content,
-      timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-      ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
-    };
-
-    addMessage(newMessage);
-
+  const handleSendMessage = async (content: string, file?: File, existingMessage?: ChatMessage) => {
+    if (!user || (!content.trim() && !file && !existingMessage)) return;
+  
+    let newMessage: ChatMessage;
+    if (existingMessage) {
+        newMessage = existingMessage;
+        addMessage(newMessage); // Add the user's first message to the UI
+    } else {
+        newMessage = {
+          id: `msg-${Date.now()}`,
+          author: 'client',
+          content,
+          timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+          ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
+        };
+        addMessage(newMessage);
+    }
+  
     // Only analyze the very first client message of the session
     const isFirstClientMessage = messages.filter(m => m.author === 'client').length === 0;
-
+  
     if (isFirstClientMessage && content.trim()) { 
       try {
         const analysis = await initiateConsultationAnalysis({ initialMessage: content });
@@ -124,7 +159,7 @@ export default function ChatPage() {
         });
       }
     }
-
+  
     // Simulate CS reply after analysis or immediately
     const replyDelay = isFirstClientMessage ? 2500 : 1000;
     
