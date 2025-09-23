@@ -32,6 +32,24 @@ export const users: { [key: string]: User } = {
 };
 
 export const chatHistory: Chat[] = [
+    {
+    id: 'chat-4',
+    category: 'Kritis',
+    date: '2024-07-29',
+    client: users.client,
+    cs: users.cs2,
+    rating: 3,
+    messages: [
+      { 
+        id: 'msg-4-1', 
+        author: 'client', 
+        content: 'Sistem kami down total, tidak bisa diakses sama sekali. Mohon segera dibantu. Saya lampirkan log terakhir dari server.', 
+        timestamp: '09:00',
+        file: { name: 'server_log.txt', url: '#' }
+      },
+      { id: 'msg-4-2', author: 'cs', content: 'Segera kami periksa, Pak Budi. Terima kasih atas lognya, ini sangat membantu.', timestamp: '09:01' },
+    ],
+  },
   {
     id: 'chat-1',
     category: 'Tinggi',
@@ -74,24 +92,6 @@ export const chatHistory: Chat[] = [
     messages: [
       { id: 'msg-3-1', author: 'client', content: 'Terima kasih atas bantuannya!', timestamp: '16:00' },
       { id: 'msg-3-2', author: 'cs', content: 'Sama-sama, senang bisa membantu.', timestamp: '16:01' },
-    ],
-  },
-    {
-    id: 'chat-4',
-    category: 'Kritis',
-    date: '2024-07-29',
-    client: users.client,
-    cs: users.cs2,
-    rating: 3,
-    messages: [
-      { 
-        id: 'msg-4-1', 
-        author: 'client', 
-        content: 'Sistem kami down total, tidak bisa diakses sama sekali. Mohon segera dibantu. Saya lampirkan log terakhir dari server.', 
-        timestamp: '09:00',
-        file: { name: 'server_log.txt', url: '#' }
-      },
-      { id: 'msg-4-2', author: 'cs', content: 'Segera kami periksa, Pak Budi. Terima kasih atas lognya, ini sangat membantu.', timestamp: '09:01' },
     ],
   },
 ];
