@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -48,18 +49,47 @@ const AvailableCS = ({ csList }: { csList: User[] }) => (
 export default function ChatPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { hasSessionStarted, startSession, messages, addMessage } = useChatSession();
+  const { hasSessionStarted, startSession, messages, addMessage, setMessages, clearMessages } = useChatSession();
   const [category, setCategory] = useState<ChatCategory>('Sedang');
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [showStartModal, setShowStartModal] = useState(false);
+  const [showStartModal, setShowStartModal] = useState(true); // Default to true, logic will decide
+  const [activeChat, setActiveChat] = useState<Chat | null>(null);
 
   const csList = Object.values(users).filter(u => u.role === 'cs');
 
-  useEffect(() => {
-    if (user && !hasSessionStarted) {
-      setShowStartModal(true);
+ useEffect(() => {
+    if (!user) return;
+
+    try {
+      const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+      const activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
+      
+      const clientActiveSession = allConsultations.find(chat => 
+        chat.client.id === user.id && activeCsSessionIds.includes(chat.id)
+      );
+
+      if (clientActiveSession) {
+        // An active session exists, load it.
+        setActiveChat(clientActiveSession);
+        setMessages(clientActiveSession.messages);
+        setCategory(clientActiveSession.category);
+        if(!hasSessionStarted) startSession();
+        setShowStartModal(false); // Don't show the start modal
+      } else {
+        // No active session, prepare for a new one.
+        setActiveChat(null);
+        if (messages.length === 0) { // Only show modal if no session has been started at all
+             setShowStartModal(true);
+        } else {
+            setShowStartModal(false);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to check for active sessions", e);
+      setShowStartModal(true); // Fallback to starting a new session
     }
   }, [user, hasSessionStarted]);
+
 
   const handleStartConsultation = (initialMessage: string, category: ChatCategory, file?: File) => {
     if (!user) return;
@@ -76,16 +106,16 @@ export default function ChatPage() {
       ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
     };
   
-    // Simulate saving the new chat to a shared place (like a database)
     const newChat: Chat = {
       id: `chat-${Date.now()}`,
       category,
-      date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+      date: new Date().toISOString().split('T')[0],
       client: user,
-      cs: users.cs, // Assign a default CS for now
-      messages: [firstMessage], // Start with the first message
+      cs: users.cs,
+      messages: [firstMessage],
       rating: undefined,
     };
+    setActiveChat(newChat); // Set as the active chat for this session
   
     try {
       const existingChats = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
@@ -101,16 +131,14 @@ export default function ChatPage() {
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
     };
   
-    // The welcome message should come first
     addMessage(welcomeMessage);
-    // Then the user's first message
     handleSendMessage(firstMessage.content, file, firstMessage);
   };
   
 
   const handleCloseModal = () => {
-    if (!hasSessionStarted) {
-        startSession();
+    if (!hasSessionStarted && messages.length === 0) {
+        startSession(); // Start a session even if they close without submitting
     }
     setShowStartModal(false);
   }
@@ -122,7 +150,7 @@ export default function ChatPage() {
     let newMessage: ChatMessage;
     if (existingMessage) {
         newMessage = existingMessage;
-        addMessage(newMessage); // Add the user's first message to the UI
+        addMessage(newMessage);
     } else {
         newMessage = {
           id: `msg-${Date.now()}`,
@@ -160,10 +188,8 @@ export default function ChatPage() {
       }
     }
   
-    // Simulate CS reply after analysis or immediately
     const replyDelay = isFirstClientMessage ? 2500 : 1000;
     
-    // Simulate CS reply
     return new Promise<void>(resolve => {
         setTimeout(() => {
             const csReply: ChatMessage = {
@@ -175,10 +201,9 @@ export default function ChatPage() {
             addMessage(csReply);
             toast({
               title: "Pesan Baru",
-              description: "Customer Support telah membalas.",
+              description: `Customer Support ${activeChat?.cs?.name || users.cs.name} telah membalas.`,
             });
             
-            // Simulate end of chat and show feedback modal
             if (content.toLowerCase().includes('terima kasih')) {
               setTimeout(() => {
                 const endMessage: ChatMessage = {
@@ -203,6 +228,8 @@ export default function ChatPage() {
       description: 'Feedback Anda telah kami terima.',
     });
     setShowFeedbackModal(false);
+    clearMessages(); // Clear messages for next session
+    setActiveChat(null);
   };
   
   if (!user) return null;
@@ -226,7 +253,7 @@ export default function ChatPage() {
                   <ChatRoom
                     messages={messages}
                     user={user}
-                    csUser={users.cs} // Default CS for simulation
+                    csUser={activeChat?.cs || users.cs}
                     onSendMessage={handleSendMessage}
                     isCategoryDisabled={true}
                     category={category}
@@ -234,7 +261,7 @@ export default function ChatPage() {
                   />
                 ) : (
                   <Card className="flex flex-1 items-center justify-center p-4 text-center rounded-2xl shadow-md">
-                    <p className="text-muted-foreground">Memulai sesi konsultasi... Silakan mulai dari pop-up yang muncul.</p>
+                    <p className="text-muted-foreground">Memuat sesi konsultasi Anda...</p>
                   </Card>
                 )}
               </div>

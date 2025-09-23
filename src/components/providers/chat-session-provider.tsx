@@ -11,7 +11,7 @@ interface ChatSessionContextType {
   startSession: () => void;
   endSession: () => void;
   addMessage: (message: ChatMessage) => void;
-  addMessages: (messages: ChatMessage[]) => void;
+  setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   clearMessages: () => void;
 }
 
@@ -23,9 +23,9 @@ export function ChatSessionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
   useEffect(() => {
+    // On logout, clear session
     if (!user) {
-      setHasSessionStarted(false);
-      setMessages([]);
+      endSession();
     }
   }, [user]);
 
@@ -33,17 +33,13 @@ export function ChatSessionProvider({ children }: { children: ReactNode }) {
     setHasSessionStarted(true);
   };
 
-  const endSession = () => {
+  const endSession = useCallback(() => {
     setHasSessionStarted(false);
     setMessages([]);
-  };
+  }, []);
 
   const addMessage = useCallback((message: ChatMessage) => {
     setMessages((prevMessages) => [...prevMessages, message]);
-  }, []);
-  
-  const addMessages = useCallback((newMessages: ChatMessage[]) => {
-    setMessages((prevMessages) => [...prevMessages, ...newMessages]);
   }, []);
 
   const clearMessages = () => {
@@ -51,7 +47,7 @@ export function ChatSessionProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ChatSessionContext.Provider value={{ hasSessionStarted, startSession, endSession, messages, addMessage, addMessages, clearMessages }}>
+    <ChatSessionContext.Provider value={{ hasSessionStarted, startSession, endSession, messages, addMessage, setMessages, clearMessages }}>
       {children}
     </ChatSessionContext.Provider>
   );
