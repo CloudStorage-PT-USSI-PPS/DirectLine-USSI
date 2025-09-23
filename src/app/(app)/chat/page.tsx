@@ -222,11 +222,7 @@ export default function ChatPage() {
             </div>
             <div className="flex flex-1 gap-6 overflow-hidden">
               <div className="flex-1 flex flex-col h-full">
-                {!hasSessionStarted && messages.length === 0 ? (
-                  <Card className="flex flex-1 items-center justify-center p-4 text-center rounded-2xl shadow-md">
-                    <p className="text-muted-foreground">Memulai sesi konsultasi... Silakan mulai dari pop-up yang muncul.</p>
-                  </Card>
-                ) : (
+                {hasSessionStarted || messages.length > 0 ? (
                   <ChatRoom
                     messages={messages}
                     user={user}
@@ -236,6 +232,10 @@ export default function ChatPage() {
                     category={category}
                     onCategoryChange={setCategory}
                   />
+                ) : (
+                  <Card className="flex flex-1 items-center justify-center p-4 text-center rounded-2xl shadow-md">
+                    <p className="text-muted-foreground">Memulai sesi konsultasi... Silakan mulai dari pop-up yang muncul.</p>
+                  </Card>
                 )}
               </div>
               <AvailableCS csList={csList} />
