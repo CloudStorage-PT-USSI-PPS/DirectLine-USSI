@@ -38,6 +38,7 @@ export const chatHistory: Chat[] = [
     date: '2024-07-28',
     client: users.client,
     cs: users.cs,
+    rating: 4,
     messages: [
       { 
         id: 'msg-1-1', 
@@ -57,6 +58,7 @@ export const chatHistory: Chat[] = [
     date: '2024-07-27',
     client: users.client,
     cs: users.cs,
+    rating: 5,
     messages: [
       { id: 'msg-2-1', author: 'client', content: 'Bagaimana cara mengubah profil saya?', timestamp: '14:00' },
       { id: 'msg-2-2', author: 'cs', content: 'Anda bisa pergi ke halaman profil dan klik tombol "Edit Profil".', timestamp: '14:01' },
@@ -68,6 +70,7 @@ export const chatHistory: Chat[] = [
     date: '2024-07-25',
     client: users.client,
     cs: users.cs,
+    rating: 5,
     messages: [
       { id: 'msg-3-1', author: 'client', content: 'Terima kasih atas bantuannya!', timestamp: '16:00' },
       { id: 'msg-3-2', author: 'cs', content: 'Sama-sama, senang bisa membantu.', timestamp: '16:01' },
@@ -79,6 +82,7 @@ export const chatHistory: Chat[] = [
     date: '2024-07-29',
     client: users.client,
     cs: users.cs2,
+    rating: 3,
     messages: [
       { 
         id: 'msg-4-1', 

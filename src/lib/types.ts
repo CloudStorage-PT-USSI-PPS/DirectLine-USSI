@@ -26,6 +26,7 @@ export type Chat = {
   messages: ChatMessage[];
   client: User;
   cs?: User;
+  rating?: number;
 };
 
 export type Feedback = {

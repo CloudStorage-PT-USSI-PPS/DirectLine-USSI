@@ -2,7 +2,25 @@ import { chatHistory } from '@/lib/data';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
-import { ArrowRight, History } from 'lucide-react';
+import { ArrowRight, History, Star } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const StarRating = ({ rating, maxRating = 5 }: { rating: number; maxRating?: number }) => {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[...Array(maxRating)].map((_, i) => (
+        <Star
+          key={i}
+          className={cn(
+            'h-4 w-4',
+            i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+          )}
+        />
+      ))}
+    </div>
+  );
+};
+
 
 export default function HistoryPage() {
   return (
@@ -23,16 +41,17 @@ export default function HistoryPage() {
                     {chat.messages.length} pesan dengan {chat.cs?.name}
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-4 w-full sm:w-auto justify-between">
-                  <Badge 
-                    variant={
-                      chat.category === 'Kritis' ? 'destructive' :
-                      chat.category === 'Tinggi' ? 'default' : 'secondary'
-                    }
-                    className="capitalize"
-                  >
-                    {chat.category}
-                  </Badge>
+                <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                    {chat.rating && <StarRating rating={chat.rating} />}
+                    <Badge 
+                        variant={
+                        chat.category === 'Kritis' ? 'destructive' :
+                        chat.category === 'Tinggi' ? 'default' : 'secondary'
+                        }
+                        className="capitalize"
+                    >
+                        {chat.category}
+                    </Badge>
                   <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 </div>
               </CardHeader>
