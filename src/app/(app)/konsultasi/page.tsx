@@ -1,11 +1,11 @@
 
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
 import { chatHistory, users } from '@/lib/data';
-import type { ChatMessage, ChatCategory } from '@/lib/types';
+import type { ChatMessage, ChatCategory, Chat } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageSquare, Users, Info } from 'lucide-react';
@@ -19,9 +19,30 @@ function ConsultationWorkspace() {
   const { toast } = useToast();
   const sessionId = searchParams.get('session');
 
-  const activeChat = sessionId ? chatHistory.find(c => c.id === sessionId) : null;
-  // This state would eventually hold multiple active chats
+  // Combine sessionStorage and initial history
+  const [allConsultations, setAllConsultations] = useState<Chat[]>([]);
+  
+  useEffect(() => {
+    try {
+        const newConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+        const combined = [...newConsultations, ...chatHistory];
+        const uniqueConsultations = Array.from(new Set(combined.map(c => c.id)))
+            .map(id => combined.find(c => c.id === id)!);
+        setAllConsultations(uniqueConsultations);
+    } catch (e) {
+        console.error("Failed to load consultations from sessionStorage", e);
+        setAllConsultations(chatHistory);
+    }
+  }, []);
+
+  const activeChat = sessionId ? allConsultations.find(c => c.id === sessionId) : null;
   const [activeChats, setActiveChats] = useState(activeChat ? [activeChat] : []);
+
+  // Update activeChats when the source of truth changes
+  useEffect(() => {
+    const chat = sessionId ? allConsultations.find(c => c.id === sessionId) : null;
+    setActiveChats(chat ? [chat] : []);
+  }, [sessionId, allConsultations]);
 
   const handleSendMessage = async (chatId: string, content: string, file?: File) => {
     if (!user) return;
@@ -34,14 +55,12 @@ function ConsultationWorkspace() {
       ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
     };
 
-    // Update the state for the specific chat
     setActiveChats(currentChats =>
       currentChats.map(chat =>
         chat.id === chatId ? { ...chat, messages: [...chat.messages, newMessage] } : chat
       )
     );
 
-    // Simulate client reply
     return new Promise<void>(resolve => {
         setTimeout(() => {
           const clientReply: ChatMessage = {
@@ -67,15 +86,28 @@ function ConsultationWorkspace() {
   };
 
     const handleCategoryChange = (chatId: string, newCategory: ChatCategory) => {
+        // Update local state for immediate UI feedback
         setActiveChats(currentChats =>
-        currentChats.map(chat =>
+          currentChats.map(chat =>
             chat.id === chatId ? { ...chat, category: newCategory } : chat
-        )
+          )
         );
+
+        // Persist the change to sessionStorage
+        try {
+            const existingChats: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+            const updatedChats = existingChats.map(chat => 
+                chat.id === chatId ? { ...chat, category: newCategory } : chat
+            );
+            sessionStorage.setItem('new-consultations', JSON.stringify(updatedChats));
+        } catch (e) {
+            console.error("Failed to update consultation in sessionStorage", e);
+        }
+
         toast({
             title: "Kategori Diperbarui",
             description: `Prioritas untuk chat dengan ${activeChat?.client.name} diubah menjadi "${newCategory}".`
-        })
+        });
     };
 
 
@@ -140,7 +172,7 @@ function ConsultationWorkspace() {
           </Card>
         ))}
          {/* Placeholder for more chat rooms */}
-        {[...Array(3 - activeChats.length)].map((_, i) => (
+        {[...Array(Math.max(0, 3 - activeChats.length))].map((_, i) => (
              <Card key={`placeholder-${i}`} className="rounded-2xl shadow-md flex items-center justify-center bg-muted/50">
                  <div className="text-center text-muted-foreground p-8">
                      <Info className="mx-auto h-8 w-8 mb-4"/>
