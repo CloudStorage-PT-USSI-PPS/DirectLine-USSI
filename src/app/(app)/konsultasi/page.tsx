@@ -208,9 +208,9 @@ function ConsultationWorkspace() {
                 <MessageSquare className="h-7 w-7" />
                 <h1>Ruang Konsultasi Aktif</h1>
             </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:items-start">
             {activeChats.map(chat => (
-            <Card key={chat.id} className="flex flex-col rounded-2xl shadow-md h-full">
+            <Card key={chat.id} className="flex flex-col rounded-2xl shadow-md">
                 <CardHeader className="flex-row items-center justify-between">
                     <div className="flex items-center gap-3">
                         <Avatar>
@@ -276,6 +276,8 @@ export default function KonsultasiPage() {
         </Suspense>
     )
 }
+
+    
 
     
 
