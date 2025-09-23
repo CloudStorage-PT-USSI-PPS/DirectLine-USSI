@@ -14,7 +14,7 @@ export default function AppRootPage() {
       if (user) {
         if (user.role === 'client') {
           router.replace("/chat");
-        } else {
+        } else if (user.role === 'cs') {
           router.replace("/dashboard");
         }
       } else {
