@@ -62,7 +62,7 @@ export default function ChatPage() {
     }
   }, [user, hasSessionStarted]);
 
-  const handleStartConsultation = (initialMessage: string, category: ChatCategory) => {
+  const handleStartConsultation = (initialMessage: string, category: ChatCategory, file?: File) => {
     startSession(); 
     setCategory(category);
     setShowStartModal(false);
@@ -75,7 +75,7 @@ export default function ChatPage() {
     };
 
     addMessage(welcomeMessage);
-    handleSendMessage(initialMessage);
+    handleSendMessage(initialMessage, file);
   };
 
   const handleCloseModal = () => {
@@ -87,7 +87,7 @@ export default function ChatPage() {
 
 
   const handleSendMessage = async (content: string, file?: File) => {
-    if (!user || !content.trim()) return;
+    if (!user || (!content.trim() && !file)) return;
 
     const newMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -100,8 +100,10 @@ export default function ChatPage() {
     addMessage(newMessage);
     setIsCsTyping(true);
 
-    if (messages.filter(m => m.author === 'client').length === 1) { // Only analyze first message
-      // First client message, trigger AI analysis
+    // Only analyze the very first client message of the session
+    const isFirstClientMessage = messages.filter(m => m.author === 'client').length === 0;
+
+    if (isFirstClientMessage && content.trim()) { 
       try {
         const analysis = await initiateConsultationAnalysis({ initialMessage: content });
         const systemMessage: ChatMessage = {
