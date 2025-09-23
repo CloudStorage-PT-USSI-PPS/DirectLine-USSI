@@ -35,7 +35,7 @@ export function ChatRoom({
   };
 
   return (
-    <Card className="flex flex-1 flex-col rounded-2xl shadow-md h-full">
+    <div className="flex flex-1 flex-col h-full">
       <ChatBox
         messages={messages}
         currentUser={user}
@@ -48,6 +48,8 @@ export function ChatRoom({
         onCategoryChange={onCategoryChange}
         isCategoryDisabled={isCategoryDisabled}
       />
-    </Card>
+    </div>
   );
 }
+
+    
