@@ -34,22 +34,26 @@ const stats = [
 ];
 
 export default function CSDashboardPage() {
-    const [allConsultations, setAllConsultations] = useState<Chat[]>([]);
-
-    useEffect(() => {
-        // This effect runs only on the client side
+    // This component now reads directly from sessionStorage on each render
+    // to ensure data is always fresh.
+    let allConsultations: Chat[] = [];
+    if (typeof window !== 'undefined') { // Ensure code runs only on the client
         try {
             const newConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+            
             // Combine new consultations with the existing history, avoiding duplicates
             const combined = [...newConsultations, ...chatHistory];
             const uniqueConsultations = Array.from(new Set(combined.map(c => c.id)))
                 .map(id => combined.find(c => c.id === id)!);
-            setAllConsultations(uniqueConsultations);
+                
+            allConsultations = uniqueConsultations;
         } catch (e) {
             console.error("Failed to load consultations from sessionStorage", e);
-            setAllConsultations(chatHistory); // Fallback to original history
+            allConsultations = chatHistory; // Fallback to original history
         }
-    }, []);
+    } else {
+        allConsultations = chatHistory;
+    }
 
     const activeConsultations = allConsultations.slice(0, 5); // Show first 5 for example
 
