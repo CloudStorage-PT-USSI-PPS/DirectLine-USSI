@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Newspaper, Wifi } from 'lucide-react';
+import { ArrowRight, Newspaper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -39,14 +39,14 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <Card className="rounded-2xl shadow-md">
-        <CardContent className="flex flex-col items-center justify-between gap-6 p-8 md:flex-row">
+        <CardContent className="flex flex-col items-start justify-between gap-6 p-6 md:flex-row md:items-center md:p-8">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Selamat Datang di DirectLine!</h1>
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Selamat Datang di DirectLine!</h1>
             <p className="text-muted-foreground">
               Butuh bantuan? Mulai sesi konsultasi dengan tim support kami sekarang.
             </p>
           </div>
-          <Button asChild size="lg" className="flex-shrink-0">
+          <Button asChild size="lg" className="w-full sm:w-auto flex-shrink-0">
             <Link href="/chat">
               Mulai Konsultasi <ArrowRight className="ml-2 h-5 w-5" />
             </Link>

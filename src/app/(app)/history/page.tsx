@@ -7,8 +7,8 @@ import { ArrowRight, History } from 'lucide-react';
 export default function HistoryPage() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2 text-3xl font-bold tracking-tight">
-        <History className="h-8 w-8" />
+      <div className="flex items-center gap-2 text-2xl md:text-3xl font-bold tracking-tight">
+        <History className="h-7 w-7 md:h-8 md:w-8" />
         <h1>Riwayat Konsultasi</h1>
       </div>
 
@@ -16,14 +16,14 @@ export default function HistoryPage() {
         {chatHistory.map((chat) => (
           <Link key={chat.id} href={`/history/${chat.id}`} className="block">
             <Card className="rounded-2xl shadow-md hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="grid gap-1.5">
-                  <CardTitle className="text-lg">Konsultasi {chat.date}</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-base md:text-lg">Konsultasi {chat.date}</CardTitle>
+                  <CardDescription className="text-sm">
                     {chat.messages.length} pesan dengan {chat.cs?.name}
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 w-full sm:w-auto justify-between">
                   <Badge 
                     variant={
                       chat.category === 'Kritis' ? 'destructive' :
@@ -33,7 +33,7 @@ export default function HistoryPage() {
                   >
                     {chat.category}
                   </Badge>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                  <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 </div>
               </CardHeader>
             </Card>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export default function LoginPage() {
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4">
        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent -z-0"/>
       <Card className="relative z-10 w-full max-w-sm animate-in fade-in-0 zoom-in-95 duration-300 shadow-2xl rounded-2xl">
         <CardHeader className="text-center">

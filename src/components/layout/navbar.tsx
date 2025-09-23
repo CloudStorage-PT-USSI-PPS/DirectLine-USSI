@@ -7,6 +7,11 @@ import { LayoutDashboard, MessageSquare, History } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/layout/logo';
 import { UserNav } from '@/components/layout/user-nav';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Menu } from 'lucide-react';
+import { useState } from 'react';
+
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -16,6 +21,7 @@ const navItems = [
 
 export function Navbar() {
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -25,7 +31,9 @@ export function Navbar() {
             <Logo />
           </Link>
         </div>
-        <nav className="flex items-center gap-6 text-sm">
+        
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-6 text-sm">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -42,8 +50,44 @@ export function Navbar() {
             </Link>
           ))}
         </nav>
+
         <div className="flex flex-1 items-center justify-end space-x-4">
           <UserNav />
+          
+          {/* Mobile Navigation Trigger */}
+          <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="md:hidden">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Buka menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[240px]">
+              <div className="flex flex-col h-full">
+                <div className='p-4 border-b'>
+                  <Logo />
+                </div>
+                <nav className="flex flex-col gap-4 p-4 text-base">
+                  {navItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={cn(
+                        'flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-muted',
+                        pathname === item.href
+                          ? 'bg-muted font-semibold text-foreground'
+                          : 'text-muted-foreground'
+                      )}
+                    >
+                      <item.icon className="h-5 w-5" />
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

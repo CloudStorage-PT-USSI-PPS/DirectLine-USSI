@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 const AvailableCS = ({ csList }: { csList: User[] }) => (
-  <Card className="hidden lg:block w-80 rounded-2xl shadow-md">
+  <Card className="hidden lg:block w-full lg:max-w-xs rounded-2xl shadow-md">
     <CardHeader>
       <CardTitle className="flex items-center gap-2">
         <Users className="h-5 w-5" />
@@ -175,8 +175,8 @@ export default function ChatPage() {
         onClose={handleCloseModal}
         onSubmit={handleStartConsultation}
       />
-      <div className="flex h-[calc(100vh-10rem)] w-full justify-center">
-        <div className="flex w-full max-w-6xl flex-col gap-6">
+      <div className="flex h-[calc(100vh-8rem-2rem)] flex-col items-center">
+        <div className="w-full max-w-6xl flex flex-col gap-6 h-full">
             <div className="flex items-center justify-center gap-2 text-2xl font-bold tracking-tight">
               <MessageSquare className="h-6 w-6" />
               <h1>Ruang Konsultasi</h1>
@@ -184,8 +184,8 @@ export default function ChatPage() {
             <div className="flex flex-1 gap-6 overflow-hidden">
                 <Card className="flex flex-1 flex-col rounded-2xl shadow-md">
                   {!hasSessionStarted && messages.length === 0 ? (
-                    <div className="flex flex-1 items-center justify-center">
-                      <p className="text-muted-foreground">Memulai sesi konsultasi...</p>
+                    <div className="flex flex-1 items-center justify-center p-4 text-center">
+                      <p className="text-muted-foreground">Memulai sesi konsultasi... Silakan mulai dari pop-up yang muncul.</p>
                     </div>
                   ) : (
                     <>
