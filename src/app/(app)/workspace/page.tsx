@@ -7,9 +7,8 @@ import { useAuth } from '@/hooks/use-auth';
 import type { Chat, ChatMessage, User, ChatCategory } from '@/lib/types';
 import { chatHistory, users } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, MessageSquare, ServerCrash, X } from 'lucide-react';
+import { MessageSquare, X } from 'lucide-react';
 import { ChatRoom } from '@/components/chat/chat-room';
-import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { CloseConsultationModal } from '@/components/chat/close-consultation-modal';
 
@@ -22,7 +21,17 @@ function ConsultationWorkspace() {
     try {
       const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
       const chatsToDisplay = allConsultations.length > 0 ? allConsultations : chatHistory.slice(0, 3);
-      setActiveChats(chatsToDisplay);
+      
+      const activeCsSessions: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
+      const sessionsToDisplay = chatsToDisplay.filter(c => activeCsSessions.includes(c.id));
+      
+      if (sessionsToDisplay.length > 0) {
+        setActiveChats(sessionsToDisplay);
+      } else {
+         // Fallback to showing first 3 if no active sessions are marked
+        setActiveChats(allConsultations.length > 0 ? allConsultations.slice(0, 3) : chatHistory.slice(0, 3));
+      }
+
     } catch (error) {
       console.error("Failed to load chats from sessionStorage, using fallback.", error);
       setActiveChats(chatHistory.slice(0, 3));
@@ -146,7 +155,7 @@ function ConsultationWorkspace() {
         <Card className="flex flex-col items-center justify-center rounded-2xl shadow-md p-8 min-h-[400px]">
             <MessageSquare className="h-16 w-16 text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold">Tidak Ada Konsultasi Aktif</h2>
-            <p className="text-muted-foreground mt-2">Menunggu permintaan konsultasi baru dari klien.</p>
+            <p className="text-muted-foreground mt-2">Pilih sesi dari halaman dashboard untuk memulai.</p>
         </Card>
       )}
        <CloseConsultationModal 
@@ -160,178 +169,54 @@ function ConsultationWorkspace() {
 
 
 export default function CsWorkspacePage() {
-    const { user } = useAuth();
     const searchParams = useSearchParams();
-    const { toast } = useToast();
-    const [isLoading, setIsLoading] = useState(true);
-    const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
-    const [error, setError] = useState<string | null>(null);
-    const [isCloseModalOpen, setCloseModalOpen] = useState(false);
-
+    const [activeChats, setActiveChats] = useState<Chat[]>([]);
+    
+    // This effect will run once to load all chats that the CS has opened.
     useEffect(() => {
         const sessionId = searchParams.get('session');
-        if (!sessionId) {
-            setIsLoading(false);
-            return;
+        let currentActiveSessions: string[] = [];
+        try {
+           currentActiveSessions = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
+           if (sessionId && !currentActiveSessions.includes(sessionId)) {
+               currentActiveSessions.push(sessionId);
+               sessionStorage.setItem('active-cs-sessions', JSON.stringify(currentActiveSessions));
+           }
+        } catch(e) {
+            console.error("Failed to update active sessions", e);
         }
 
         try {
             const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
             const combinedChats = [...allConsultations, ...chatHistory];
-            const chat = combinedChats.find(c => c.id === sessionId);
-
-            if (chat) {
-                setSelectedChat(chat);
-
-                const activeCsSessions: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
-                if (!activeCsSessions.includes(sessionId)) {
-                    activeCsSessions.push(sessionId);
-                    sessionStorage.setItem('active-cs-sessions', JSON.stringify(activeCsSessions));
+            
+            const uniqueChatMap = new Map<string, Chat>();
+            combinedChats.forEach(chat => {
+                if (!uniqueChatMap.has(chat.id)) {
+                    uniqueChatMap.set(chat.id, chat);
                 }
+            });
 
-            } else {
-                setError('Sesi konsultasi tidak ditemukan.');
-            }
+            const chatsToDisplay = currentActiveSessions
+                .map(id => uniqueChatMap.get(id))
+                .filter((chat): chat is Chat => chat !== undefined);
+            
+            setActiveChats(chatsToDisplay);
         } catch (e) {
-            console.error("Failed to load session:", e);
-            setError('Gagal memuat sesi konsultasi.');
-        } finally {
-            setIsLoading(false);
+            console.error("Failed to load chats", e);
+            // Fallback if sessionStorage fails
+            const chatFromHistory = chatHistory.find(c => c.id === sessionId);
+            if(chatFromHistory) setActiveChats([chatFromHistory]);
         }
+
     }, [searchParams]);
 
-    const handleSendMessage = async (content: string, file?: File) => {
-        if (!user || !selectedChat) return;
 
-        const csUser = Object.values(users).find(u => u.role === 'cs')!;
-
-        const newMessage: ChatMessage = {
-            id: `msg-${Date.now()}`,
-            author: 'cs',
-            content,
-            timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-            ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
-        };
-
-        setSelectedChat(prev => {
-            if (!prev) return null;
-            const updatedChat = { ...prev, messages: [...prev.messages, newMessage] };
-
-            try {
-                const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-                const chatIndex = allConsultations.findIndex(c => c.id === selectedChat.id);
-                if (chatIndex > -1) {
-                    allConsultations[chatIndex] = updatedChat;
-                    sessionStorage.setItem('new-consultations', JSON.stringify(allConsultations));
-                }
-            } catch (e) {
-                console.error("Failed to update sessionStorage", e);
-            }
-
-            return updatedChat;
-        });
-        
-        toast({
-            title: "Pesan Terkirim",
-            description: `Pesan Anda untuk ${selectedChat.client.name} telah terkirim.`,
-        });
-    };
-    
-    const handleCategoryChange = (newCategory: ChatCategory) => {
-        if (!selectedChat) return;
-        setSelectedChat(prev => {
-             if (!prev) return null;
-             const updatedChat = { ...prev, category: newCategory };
-             try {
-                const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-                const chatIndex = allConsultations.findIndex(c => c.id === selectedChat.id);
-                if (chatIndex > -1) {
-                    allConsultations[chatIndex] = updatedChat;
-                    sessionStorage.setItem('new-consultations', JSON.stringify(allConsultations));
-                }
-            } catch (e) {
-                console.error("Failed to update sessionStorage for category change", e);
-            }
-             return updatedChat;
-        });
-    };
-
-    const handleCloseSubmit = (reason: string) => {
-        console.log("Closing consultation:", reason);
-        toast({
-            title: "Sesi Ditutup",
-            description: "Sesi konsultasi telah ditutup."
-        });
-        setCloseModalOpen(false);
-        // Here you would redirect or update UI to show chat is closed
-    };
-
-
-    if (isLoading) {
-        return (
-            <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <p className="mt-4 text-muted-foreground">Memuat sesi...</p>
-            </div>
-        );
+    if (!searchParams.get('session') && activeChats.length === 0) {
+       return <ConsultationWorkspace />;
     }
     
-    // If no session ID in URL, show the multi-chat workspace
-    if (!searchParams.get('session')) {
-        return <ConsultationWorkspace />;
-    }
-
-    if (error) {
-        return (
-            <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center">
-                <Card className="max-w-lg p-8 rounded-2xl shadow-md">
-                     <ServerCrash className="mx-auto h-12 w-12 text-destructive mb-4" />
-                     <h1 className="text-2xl font-bold mb-2">Terjadi Kesalahan</h1>
-                     <p className="text-muted-foreground">{error}</p>
-                </Card>
-            </div>
-        );
-    }
-
-    if (!selectedChat) {
-         return (
-            <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <p className="mt-4 text-muted-foreground">Mempersiapkan ruang konsultasi...</p>
-            </div>
-        );
-    }
-    
-    // If session ID is present, show the single chat room view
-    return (
-        <div className="flex h-[calc(100vh-8rem-2rem)] flex-col items-center">
-            <div className="w-full max-w-4xl flex h-full flex-col">
-                <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
-                     <CardHeader className="flex-row items-center justify-between">
-                        <div>
-                             <CardTitle>Konsultasi dengan {selectedChat.client.name}</CardTitle>
-                        </div>
-                        <Button variant="destructive" onClick={() => setCloseModalOpen(true)}>Tutup Sesi</Button>
-                     </CardHeader>
-                    <ChatRoom
-                        messages={selectedChat.messages}
-                        user={user!}
-                        csUser={selectedChat.cs || users.cs}
-                        onSendMessage={handleSendMessage}
-                        category={selectedChat.category}
-                        onCategoryChange={handleCategoryChange}
-                        isCategoryDisabled={false}
-                    />
-                </Card>
-            </div>
-             <CloseConsultationModal
-                isOpen={isCloseModalOpen}
-                onClose={() => setCloseModalOpen(false)}
-                onSubmit={handleCloseSubmit}
-            />
-        </div>
-    );
+    // The main component is now always the multi-chat workspace
+    return <ConsultationWorkspace />;
 }
-
-
 
