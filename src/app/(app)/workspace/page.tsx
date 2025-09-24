@@ -128,15 +128,17 @@ function ConsultationWorkspace() {
                     <X className="h-4 w-4" />
                 </Button>
               </CardHeader>
-              <ChatRoom
-                messages={chat.messages}
-                user={users.cs} 
-                csUser={chat.cs || users.cs}
-                onSendMessage={(content, file) => handleSendMessage(chat.id, content, file)}
-                category={chat.category}
-                onCategoryChange={(newCategory) => handleCategoryChange(chat.id, newCategory)}
-                isCategoryDisabled={false}
-              />
+               <CardContent className="flex-1 flex flex-col p-0">
+                  <ChatRoom
+                    messages={chat.messages}
+                    user={users.cs} 
+                    csUser={chat.cs || users.cs}
+                    onSendMessage={(content, file) => handleSendMessage(chat.id, content, file)}
+                    category={chat.category}
+                    onCategoryChange={(newCategory) => handleCategoryChange(chat.id, newCategory)}
+                    isCategoryDisabled={false}
+                  />
+              </CardContent>
             </Card>
           ))}
         </div>
@@ -330,5 +332,6 @@ export default function CsWorkspacePage() {
         </div>
     );
 }
+
 
 
