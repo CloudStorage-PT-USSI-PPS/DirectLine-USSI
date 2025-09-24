@@ -10,8 +10,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function HistoryDetailPage({ params }: { params: { id: string } }) {
-  const id = params.id;
-  const chat = chatHistory.find((c) => c.id === id);
+  const chat = chatHistory.find((c) => c.id === params.id);
 
   if (!chat) {
     notFound();
