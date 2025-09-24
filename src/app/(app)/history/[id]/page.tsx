@@ -9,8 +9,7 @@ import { ChatBox } from '@/components/chat/chat-box';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-export default function HistoryDetailPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function HistoryDetailPage({ params: { id } }: { params: { id: string } }) {
   const chat = chatHistory.find((c) => c.id === id);
 
   if (!chat) {
