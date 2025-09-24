@@ -58,7 +58,7 @@ export function LoginForm() {
         } else if (loggedInUser.role === 'cs') {
             description = 'Selamat bertugas, Ussians!';
         } else if (loggedInUser.role === 'atasan') {
-            description = 'Selamat datang, Pemimpin!';
+            description = 'Selamat datang, ChiefLine!';
         }
 
       toast({
