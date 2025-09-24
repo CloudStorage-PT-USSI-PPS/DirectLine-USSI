@@ -17,8 +17,10 @@ export default function Gate() {
         // Redirect based on role
         if (user.role === 'client') {
           router.push("/chat");
-        } else {
+        } else if (user.role === 'cs') {
           router.push("/dashboard");
+        } else if (user.role === 'atasan') {
+          router.push('/performance-dashboard');
         }
       } else {
         router.push("/login");
@@ -37,4 +39,3 @@ export default function Gate() {
     </div>
   );
 }
-
