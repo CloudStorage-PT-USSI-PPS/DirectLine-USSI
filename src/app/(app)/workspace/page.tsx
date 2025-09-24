@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/use-auth';
-import type { Chat, ChatMessage, User } from '@/lib/types';
+import type { Chat, ChatMessage, User, ChatCategory } from '@/lib/types';
 import { chatHistory, users } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, MessageSquare, ServerCrash, X } from 'lucide-react';
@@ -59,6 +59,29 @@ function ConsultationWorkspace() {
         return chat;
     }));
   };
+  
+  const handleCategoryChange = (chatId: string, newCategory: ChatCategory) => {
+    setActiveChats(prevChats =>
+      prevChats.map(chat => {
+        if (chat.id === chatId) {
+          const updatedChat = { ...chat, category: newCategory };
+          // Update sessionStorage as well
+          try {
+            const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+            const chatIndex = allConsultations.findIndex(c => c.id === chatId);
+            if (chatIndex > -1) {
+              allConsultations[chatIndex] = updatedChat;
+              sessionStorage.setItem('new-consultations', JSON.stringify(allConsultations));
+            }
+          } catch (e) {
+            console.error("Failed to update sessionStorage for category change", e);
+          }
+          return updatedChat;
+        }
+        return chat;
+      })
+    );
+  };
 
   const openCloseModal = (chatId: string) => {
     setClosingChatId(chatId);
@@ -96,7 +119,7 @@ function ConsultationWorkspace() {
       {activeChats.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {activeChats.map(chat => (
-            <Card key={chat.id} className="flex flex-col rounded-2xl shadow-md overflow-hidden h-[70vh]">
+            <Card key={chat.id} className="flex flex-col rounded-2xl shadow-md overflow-hidden h-[75vh]">
               <CardHeader className="flex-row items-center justify-between">
                 <div className='grid gap-1.5'>
                     <CardTitle className="text-base">{chat.client.name}</CardTitle>
@@ -111,8 +134,8 @@ function ConsultationWorkspace() {
                 csUser={chat.cs || users.cs}
                 onSendMessage={(content, file) => handleSendMessage(chat.id, content, file)}
                 category={chat.category}
-                onCategoryChange={() => {}} // Not changeable by CS
-                isCategoryDisabled={true}
+                onCategoryChange={(newCategory) => handleCategoryChange(chat.id, newCategory)}
+                isCategoryDisabled={false}
               />
             </Card>
           ))}
@@ -211,6 +234,25 @@ export default function CsWorkspacePage() {
             description: `Pesan Anda untuk ${selectedChat.client.name} telah terkirim.`,
         });
     };
+    
+    const handleCategoryChange = (newCategory: ChatCategory) => {
+        if (!selectedChat) return;
+        setSelectedChat(prev => {
+             if (!prev) return null;
+             const updatedChat = { ...prev, category: newCategory };
+             try {
+                const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+                const chatIndex = allConsultations.findIndex(c => c.id === selectedChat.id);
+                if (chatIndex > -1) {
+                    allConsultations[chatIndex] = updatedChat;
+                    sessionStorage.setItem('new-consultations', JSON.stringify(allConsultations));
+                }
+            } catch (e) {
+                console.error("Failed to update sessionStorage for category change", e);
+            }
+             return updatedChat;
+        });
+    };
 
     const handleCloseSubmit = (reason: string) => {
         console.log("Closing consultation:", reason);
@@ -275,8 +317,8 @@ export default function CsWorkspacePage() {
                         csUser={selectedChat.cs || users.cs}
                         onSendMessage={handleSendMessage}
                         category={selectedChat.category}
-                        onCategoryChange={() => {}}
-                        isCategoryDisabled={true}
+                        onCategoryChange={handleCategoryChange}
+                        isCategoryDisabled={false}
                     />
                 </Card>
             </div>
@@ -288,4 +330,5 @@ export default function CsWorkspacePage() {
         </div>
     );
 }
+
 
