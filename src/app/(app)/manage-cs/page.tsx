@@ -58,11 +58,11 @@ export default function ManageCsPage() {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState({ name: '', email: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
 
   const handleOpenModal = (user: User | null = null) => {
     setEditingUser(user);
-    setFormData(user ? { name: user.name, email: user.email } : { name: '', email: '' });
+    setFormData(user ? { name: user.name, email: user.email, password: '' } : { name: '', email: '', password: '' });
     setIsModalOpen(true);
   };
 
@@ -76,16 +76,21 @@ export default function ManageCsPage() {
         toast({ title: "Validasi Gagal", description: "Nama dan Email wajib diisi.", variant: "destructive" });
         return;
     }
+    if (!editingUser && !formData.password) {
+        toast({ title: "Validasi Gagal", description: "Password wajib diisi untuk akun baru.", variant: "destructive" });
+        return;
+    }
 
     if (editingUser) {
       // Update
-      setCsList(csList.map((u) => (u.id === editingUser.id ? { ...u, ...formData } : u)));
+      setCsList(csList.map((u) => (u.id === editingUser.id ? { ...u, name: formData.name, email: formData.email } : u)));
       toast({ title: "Berhasil", description: "Akun CS telah diperbarui." });
     } else {
       // Create
       const newUser: User = {
         id: `cs-${Date.now()}`,
-        ...formData,
+        name: formData.name,
+        email: formData.email,
         role: 'cs',
         avatar: `https://i.pravatar.cc/150?u=${formData.email}`,
       };
@@ -193,7 +198,7 @@ export default function ManageCsPage() {
           <DialogHeader>
             <DialogTitle>{editingUser ? 'Edit Akun CS' : 'Tambah Akun CS Baru'}</DialogTitle>
             <DialogDescription>
-              {editingUser ? 'Perbarui detail akun di bawah ini.' : 'Isi detail untuk akun baru.'}
+              {editingUser ? 'Perbarui detail akun di bawah ini. Kosongkan password jika tidak ingin mengubahnya.' : 'Isi detail untuk akun baru.'}
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -217,6 +222,19 @@ export default function ManageCsPage() {
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="col-span-3"
+              />
+            </div>
+             <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="password" className="text-right">
+                Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder={editingUser ? 'Kosongkan jika tidak berubah' : '••••••••'}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="col-span-3"
               />
             </div>
