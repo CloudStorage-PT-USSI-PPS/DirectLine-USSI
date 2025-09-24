@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -20,7 +21,7 @@ import { useState } from 'react';
 
 const csNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/konsultasi', label: 'Konsultasi', icon: MessageSquare },
+  { href: '/workspace', label: 'Konsultasi', icon: MessageSquare },
   { href: '/history', label: 'Riwayat', icon: History },
 ];
 

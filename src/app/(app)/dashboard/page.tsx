@@ -22,6 +22,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { chatHistory } from '@/lib/data';
 import type { Chat } from '@/lib/types';
+import { useEffect, useState } from 'react';
 
 
 // Mock data for stats
@@ -33,23 +34,22 @@ const stats = [
 ];
 
 export default function CSDashboardPage() {
-    let allConsultations: Chat[] = [];
-    if (typeof window !== 'undefined') { // Ensure code runs only on the client
+    const [allConsultations, setAllConsultations] = useState<Chat[]>(chatHistory);
+
+    useEffect(() => {
+        let consultations: Chat[] = [];
         try {
             const newConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-            
             const combined = [...newConsultations, ...chatHistory];
             const uniqueConsultations = Array.from(new Set(combined.map(c => c.id)))
                 .map(id => combined.find(c => c.id === id)!);
-                
-            allConsultations = uniqueConsultations.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id.localeCompare(a.id));
+            consultations = uniqueConsultations.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || b.id.localeCompare(a.id));
         } catch (e) {
             console.error("Failed to load consultations from sessionStorage", e);
-            allConsultations = chatHistory;
+            consultations = chatHistory;
         }
-    } else {
-        allConsultations = chatHistory;
-    }
+        setAllConsultations(consultations);
+    }, []);
 
   return (
     <div className="flex flex-col gap-6 md:gap-8">
@@ -129,7 +129,7 @@ export default function CSDashboardPage() {
                             </TableCell>
                             <TableCell className="text-right">
                                 <Button asChild size="sm">
-                                    <Link href={`/konsultasi?session=${chat.id}`}>
+                                    <Link href={`/workspace?session=${chat.id}`}>
                                         Tanggapi
                                     </Link>
                                 </Button>
