@@ -56,7 +56,7 @@ export function LoginForm() {
         if (loggedInUser.role === 'client') {
             description = 'Selamat berkonsultasi, MitraLine!';
         } else if (loggedInUser.role === 'cs') {
-            description = 'Selamat bertugas, Tim Support!';
+            description = 'Selamat bertugas, Ussians!';
         } else if (loggedInUser.role === 'atasan') {
             description = 'Selamat datang, Pemimpin!';
         }
