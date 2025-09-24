@@ -3,8 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
-import type { Chat, ChatMessage, User, ChatCategory } from '@/lib/types';
+import type { Chat, ChatMessage, ChatCategory } from '@/lib/types';
 import { chatHistory, users } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MessageSquare, X } from 'lucide-react';
@@ -13,59 +12,80 @@ import { Button } from '@/components/ui/button';
 import { CloseConsultationModal } from '@/components/chat/close-consultation-modal';
 
 function ConsultationWorkspace() {
+  const searchParams = useSearchParams();
   const [activeChats, setActiveChats] = useState<Chat[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [closingChatId, setClosingChatId] = useState<string | null>(null);
 
   useEffect(() => {
+    const sessionId = searchParams.get('session');
+    let currentActiveSessions: string[] = [];
     try {
-      const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-      const chatsToDisplay = allConsultations.length > 0 ? allConsultations : chatHistory.slice(0, 3);
-      
-      const activeCsSessions: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
-      const sessionsToDisplay = chatsToDisplay.filter(c => activeCsSessions.includes(c.id));
-      
-      if (sessionsToDisplay.length > 0) {
-        setActiveChats(sessionsToDisplay);
-      } else {
-         // Fallback to showing first 3 if no active sessions are marked
-        setActiveChats(allConsultations.length > 0 ? allConsultations.slice(0, 3) : chatHistory.slice(0, 3));
-      }
-
-    } catch (error) {
-      console.error("Failed to load chats from sessionStorage, using fallback.", error);
-      setActiveChats(chatHistory.slice(0, 3));
+        currentActiveSessions = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
+        if (sessionId && !currentActiveSessions.includes(sessionId)) {
+            currentActiveSessions.push(sessionId);
+            sessionStorage.setItem('active-cs-sessions', JSON.stringify(currentActiveSessions));
+        }
+    } catch(e) {
+        console.error("Failed to update active sessions", e);
     }
-  }, []);
+
+    try {
+        const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+        const combinedChats = [...allConsultations, ...chatHistory];
+        
+        const uniqueChatMap = new Map<string, Chat>();
+        combinedChats.forEach(chat => {
+            if (!uniqueChatMap.has(chat.id)) {
+                uniqueChatMap.set(chat.id, chat);
+            }
+        });
+
+        // If there are no active sessions, fall back to showing the first 3 chats as a default view.
+        const sessionsToLoad = currentActiveSessions.length > 0 ? currentActiveSessions : chatHistory.slice(0, 3).map(c => c.id);
+
+        const chatsToDisplay = sessionsToLoad
+            .map(id => uniqueChatMap.get(id))
+            .filter((chat): chat is Chat => chat !== undefined);
+        
+        setActiveChats(chatsToDisplay);
+    } catch (e) {
+        console.error("Failed to load chats", e);
+        // Fallback if sessionStorage fails
+        const chatFromHistory = chatHistory.find(c => c.id === sessionId);
+        if(chatFromHistory) {
+          setActiveChats([chatFromHistory]);
+        } else {
+          setActiveChats(chatHistory.slice(0, 3));
+        }
+    }
+  }, [searchParams]);
 
   const handleSendMessage = async (chatId: string, content: string, file?: File) => {
-    // In a real app, you would send this to your backend
-    console.log(`CS sending message to ${chatId}:`, { content, file });
-
-     const newMessage: ChatMessage = {
-        id: `msg-${Date.now()}`,
-        author: 'cs',
-        content,
-        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
+    const newMessage: ChatMessage = {
+      id: `msg-${Date.now()}`,
+      author: 'cs',
+      content,
+      timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
     };
 
     setActiveChats(prev => prev.map(chat => {
-        if (chat.id === chatId) {
-            const updatedChat = { ...chat, messages: [...chat.messages, newMessage] };
-             try {
-                const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-                const chatIndex = allConsultations.findIndex(c => c.id === chatId);
-                if (chatIndex > -1) {
-                    allConsultations[chatIndex] = updatedChat;
-                    sessionStorage.setItem('new-consultations', JSON.stringify(allConsultations));
-                }
-            } catch (e) {
-                console.error("Failed to update sessionStorage", e);
-            }
-            return updatedChat;
+      if (chat.id === chatId) {
+        const updatedChat = { ...chat, messages: [...chat.messages, newMessage] };
+        try {
+          const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+          const chatIndex = allConsultations.findIndex(c => c.id === chatId);
+          if (chatIndex > -1) {
+            allConsultations[chatIndex] = updatedChat;
+            sessionStorage.setItem('new-consultations', JSON.stringify(allConsultations));
+          }
+        } catch (e) {
+          console.error("Failed to update sessionStorage", e);
         }
-        return chat;
+        return updatedChat;
+      }
+      return chat;
     }));
   };
   
@@ -74,7 +94,6 @@ function ConsultationWorkspace() {
       prevChats.map(chat => {
         if (chat.id === chatId) {
           const updatedChat = { ...chat, category: newCategory };
-          // Update sessionStorage as well
           try {
             const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
             const chatIndex = allConsultations.findIndex(c => c.id === chatId);
@@ -99,10 +118,9 @@ function ConsultationWorkspace() {
 
   const handleCloseConsultation = (reason: string) => {
     if (closingChatId) {
-      console.log(`Closing chat ${closingChatId}. Reason: ${reason}`);
       setActiveChats(prev => prev.filter(c => c.id !== closingChatId));
 
-       try {
+      try {
         const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
         const updatedConsultations = allConsultations.filter(c => c.id !== closingChatId);
         sessionStorage.setItem('new-consultations', JSON.stringify(updatedConsultations));
@@ -110,7 +128,6 @@ function ConsultationWorkspace() {
         const activeCsSessions: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
         const updatedActiveSessions = activeCsSessions.filter(id => id !== closingChatId);
         sessionStorage.setItem('active-cs-sessions', JSON.stringify(updatedActiveSessions));
-
       } catch (e) {
         console.error("Failed to update sessionStorage on close", e);
       }
@@ -169,54 +186,7 @@ function ConsultationWorkspace() {
 
 
 export default function CsWorkspacePage() {
-    const searchParams = useSearchParams();
-    const [activeChats, setActiveChats] = useState<Chat[]>([]);
-    
-    // This effect will run once to load all chats that the CS has opened.
-    useEffect(() => {
-        const sessionId = searchParams.get('session');
-        let currentActiveSessions: string[] = [];
-        try {
-           currentActiveSessions = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
-           if (sessionId && !currentActiveSessions.includes(sessionId)) {
-               currentActiveSessions.push(sessionId);
-               sessionStorage.setItem('active-cs-sessions', JSON.stringify(currentActiveSessions));
-           }
-        } catch(e) {
-            console.error("Failed to update active sessions", e);
-        }
-
-        try {
-            const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-            const combinedChats = [...allConsultations, ...chatHistory];
-            
-            const uniqueChatMap = new Map<string, Chat>();
-            combinedChats.forEach(chat => {
-                if (!uniqueChatMap.has(chat.id)) {
-                    uniqueChatMap.set(chat.id, chat);
-                }
-            });
-
-            const chatsToDisplay = currentActiveSessions
-                .map(id => uniqueChatMap.get(id))
-                .filter((chat): chat is Chat => chat !== undefined);
-            
-            setActiveChats(chatsToDisplay);
-        } catch (e) {
-            console.error("Failed to load chats", e);
-            // Fallback if sessionStorage fails
-            const chatFromHistory = chatHistory.find(c => c.id === sessionId);
-            if(chatFromHistory) setActiveChats([chatFromHistory]);
-        }
-
-    }, [searchParams]);
-
-
-    if (!searchParams.get('session') && activeChats.length === 0) {
-       return <ConsultationWorkspace />;
-    }
-    
-    // The main component is now always the multi-chat workspace
     return <ConsultationWorkspace />;
 }
 
+    
