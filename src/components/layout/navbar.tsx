@@ -24,7 +24,7 @@ import { useAuth } from '@/hooks/use-auth';
 
 const allNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['cs'] },
-  { href: '/konsultasi', label: 'Konsultasi', icon: MessageSquare, roles: ['cs'] },
+  { href: '/konsultasi', label: 'Konsultasi', icon: MessageSquare, roles: ['cs', 'client'] },
   { href: '/chat', label: 'Chat', icon: MessageSquare, roles: ['client'] },
   { href: '/history', label: 'Riwayat', icon: History, roles: ['client', 'cs'] },
 ];
@@ -34,7 +34,29 @@ export function Navbar() {
   const { user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  const navItems = allNavItems.filter(item => user && item.roles.includes(user.role));
+  const navItems = allNavItems.filter(item => {
+    if (!user) return false;
+    // Special rule for client's 'Konsultasi' vs 'Chat'
+    if (user.role === 'client') {
+      if (item.href === '/konsultasi' && allNavItems.some(i => i.href === '/chat' && i.roles.includes('client'))) {
+        return true;
+      }
+    }
+    return item.roles.includes(user.role);
+  }).filter(item => {
+      // Hide "Konsultasi" from CS if they also have a dashboard
+      if (user?.role === 'cs' && item.href === '/konsultasi') {
+          return allNavItems.some(i => i.href === '/dashboard' && i.roles.includes('cs'));
+      }
+      return true;
+  });
+
+
+  const clientNavItems = allNavItems.filter(item => user && item.roles.includes('client') && item.label !== 'Konsultasi');
+  const csNavItems = allNavItems.filter(item => user && item.roles.includes('cs'));
+
+  const finalNavItems = user?.role === 'client' ? clientNavItems.concat(allNavItems.find(item => item.label ==='Konsultasi' && item.roles.includes('client'))!) : csNavItems;
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -47,7 +69,7 @@ export function Navbar() {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6 text-sm">
-          {navItems.map((item) => (
+          {finalNavItems.filter(Boolean).map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -86,7 +108,7 @@ export function Navbar() {
                 </SheetHeader>
                 <div className="flex flex-col h-full">
                     <nav className="flex flex-col gap-4 p-4 text-base">
-                    {navItems.map((item) => (
+                    {finalNavItems.filter(Boolean).map((item) => (
                         <Link
                         key={item.href}
                         href={item.href}
@@ -111,3 +133,4 @@ export function Navbar() {
     </header>
   );
 }
+
