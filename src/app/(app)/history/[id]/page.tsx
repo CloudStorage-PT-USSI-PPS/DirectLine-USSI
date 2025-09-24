@@ -2,15 +2,17 @@
 'use client';
     
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import { ChevronLeft } from 'lucide-react';
 import { chatHistory, users } from '@/lib/data';
 import { ChatBox } from '@/components/chat/chat-box';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-export default function HistoryDetailPage({ params }: { params: { id: string } }) {
-  const chat = chatHistory.find((c) => c.id === params.id);
+export default function HistoryDetailPage() {
+  const params = useParams();
+  const id = typeof params.id === 'string' ? params.id : '';
+  const chat = chatHistory.find((c) => c.id === id);
 
   if (!chat) {
     notFound();
