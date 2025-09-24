@@ -3,7 +3,7 @@ export type User = {
   name: string;
   email: string;
   avatar: string;
-  role: 'client' | 'cs';
+  role: 'client' | 'cs' | 'atasan';
   bprName?: string;
 };
 

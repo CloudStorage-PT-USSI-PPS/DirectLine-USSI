@@ -3,6 +3,7 @@
 import { useAuth } from '@/hooks/use-auth';
 import { ClientNavbar } from './client-navbar';
 import { CsNavbar } from './cs-navbar';
+import { AtasanNavbar } from './atasan-navbar';
 
 export function Navbar() {
   const { user } = useAuth();
@@ -18,6 +19,10 @@ export function Navbar() {
 
   if (user.role === 'cs') {
     return <CsNavbar />;
+  }
+
+  if (user.role === 'atasan') {
+    return <AtasanNavbar />;
   }
 
   return null;

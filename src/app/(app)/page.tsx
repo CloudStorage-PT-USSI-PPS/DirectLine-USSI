@@ -37,6 +37,8 @@ export default function AppRootPage() {
           }
         } else if (user.role === 'cs') {
           router.replace("/dashboard");
+        } else if (user.role === 'atasan') {
+          router.replace('/performance-dashboard');
         }
       } else {
         router.replace("/login");

@@ -30,6 +30,13 @@ export const users: { [key: string]: User } = {
     avatar: 'https://i.pravatar.cc/150?u=rina',
     role: 'cs',
   },
+  atasan: {
+    id: 'atasan-1',
+    name: 'Bapak Atasan',
+    email: 'atasan@directline.com',
+    avatar: 'https://i.pravatar.cc/150?u=atasan',
+    role: 'atasan',
+  }
 };
 
 export const chatHistory: Chat[] = [
