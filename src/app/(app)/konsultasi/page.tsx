@@ -1,154 +1,139 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import type { Chat, ChatMessage } from '@/lib/types';
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from '@/components/ui/card';
-import { Loader2, MessageSquare, Plus, X } from 'lucide-react';
+import type { Chat, ChatMessage, User } from '@/lib/types';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2, MessageSquare, ServerCrash } from 'lucide-react';
 import { ChatRoom } from '@/components/chat/chat-room';
-import { users, chatHistory } from '@/lib/data';
-import { Button } from '@/components/ui/button';
+import { users } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
-import { CloseConsultationModal } from '@/components/chat/close-consultation-modal';
+import { useChatSession } from '@/components/providers/chat-session-provider';
 
-export default function CSWorkspacePage() {
+export default function ClientConsultationPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [activeConsultations, setActiveConsultations] = useState<Chat[]>(chatHistory.slice(0, 3));
-  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
-  const [selectedChatToClose, setSelectedChatToClose] = useState<string | null>(null);
+  const { addMessage: addMessageToGlobal, setMessages: setGlobalMessages } = useChatSession();
+  const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isCsActive, setIsCsActive] = useState(false);
 
-  const handleSendMessage = async (chatId: string, content: string, file?: File) => {
+  useEffect(() => {
     if (!user) return;
+
+    try {
+      const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+      const activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
+      
+      const clientSession = allConsultations.find(chat => chat.client.id === user.id);
+
+      if (clientSession) {
+        setActiveChat(clientSession);
+        setLocalMessages(clientSession.messages);
+        
+        if (activeCsSessionIds.includes(clientSession.id)) {
+          setIsCsActive(true); // CS has responded, show chat room
+        } else {
+          setIsCsActive(false); // Waiting for CS
+        }
+      } else {
+        // No session started by this client
+        setActiveChat(null);
+      }
+    } catch (e) {
+      console.error("Failed to load consultation from sessionStorage", e);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const handleSendMessage = async (content: string, file?: File) => {
+    if (!user || !activeChat) return;
 
     const newMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
-      author: 'cs',
+      author: 'client',
       content,
       timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
     };
 
-    setActiveConsultations(prev => 
-        prev.map(chat => 
-            chat.id === chatId ? { ...chat, messages: [...chat.messages, newMessage] } : chat
-        )
-    );
+    const updatedMessages = [...localMessages, newMessage];
+    setLocalMessages(updatedMessages);
+    addMessageToGlobal(newMessage); // Also update global context if needed
 
-    toast({
-      title: "Pesan Terkirim",
-      description: `Pesan Anda untuk klien ${activeConsultations.find(c => c.id === chatId)?.client.name} telah dikirim.`,
-    });
-
-    // Simulate client reply
-    return new Promise<void>(resolve => {
-        setTimeout(() => {
-            const clientReply: ChatMessage = {
-                id: `client-reply-${Date.now()}`,
-                author: 'client',
-                content: 'Oke, terima kasih atas informasinya. Akan saya coba.',
-                timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-            };
-            setActiveConsultations(prev => 
-                prev.map(chat => 
-                    chat.id === chatId ? { ...chat, messages: [...chat.messages, clientReply] } : chat
-                )
-            );
-            resolve();
-        }, 2000);
-    });
+    // Simulate CS reply
+    setTimeout(() => {
+      const csReply: ChatMessage = {
+        id: `cs-reply-${Date.now()}`,
+        author: 'cs',
+        content: 'Baik, pesan Anda sudah kami terima. Mohon tunggu balasan dari kami selanjutnya.',
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      };
+      setLocalMessages(prev => [...prev, csReply]);
+      addMessageToGlobal(csReply);
+      toast({
+        title: "Pesan Baru",
+        description: `Customer Support telah membalas.`,
+      });
+    }, 1500);
   };
 
-  const handleOpenCloseModal = (chatId: string) => {
-    setSelectedChatToClose(chatId);
-    setIsCloseModalOpen(true);
-  };
-
-  const handleCloseConsultation = (reason: string) => {
-    if (!selectedChatToClose) return;
-    
-    console.log(`Closing chat ${selectedChatToClose} with reason: ${reason}`);
-
-    setActiveConsultations(prev => prev.filter(chat => chat.id !== selectedChatToClose));
-
-    toast({
-        title: 'Sesi Ditutup',
-        description: 'Sesi konsultasi telah berhasil ditutup.',
-    });
-    
-    setIsCloseModalOpen(false);
-    setSelectedChatToClose(null);
-  };
-
-  if (!user || user.role !== 'cs') {
+  if (loading) {
     return (
-      <div className="flex h-[calc(100vh-8rem)] items-center justify-center">
+      <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="ml-4">Memuat...</p>
+        <p className="mt-4 text-muted-foreground">Memuat sesi konsultasi Anda...</p>
       </div>
     );
   }
 
-  return (
-    <>
-        <div className="flex flex-col gap-6 md:gap-8">
-            <div className="space-y-2">
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Ruang Kerja Konsultasi</h1>
+  if (!activeChat) {
+    return (
+       <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center">
+          <Card className="max-w-lg p-8 rounded-2xl shadow-md">
+                <MessageSquare className="mx-auto h-12 w-12 text-primary mb-4" />
+                <h1 className="text-2xl font-bold mb-2">Belum Ada Konsultasi</h1>
                 <p className="text-muted-foreground">
-                    Kelola beberapa sesi konsultasi dengan klien secara bersamaan.
+                    Anda belum memulai sesi konsultasi apapun. Silakan pergi ke halaman 'Chat' untuk memulai percakapan baru.
                 </p>
-            </div>
-            <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-6 lg:items-start">
-                {activeConsultations.map((chat) => (
-                    <Card key={chat.id} className="flex flex-col rounded-2xl shadow-md overflow-hidden">
-                        <CardHeader className="flex-row items-center justify-between p-4 border-b">
-                            <div className='grid gap-1'>
-                                <CardTitle className="text-base font-semibold">{chat.client.name}</CardTitle>
-                                <CardDescription className="text-xs">{chat.client.bprName}</CardDescription>
-                            </div>
-                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleOpenCloseModal(chat.id)}>
-                                <X className="h-4 w-4" />
-                                <span className="sr-only">Tutup Sesi</span>
-                            </Button>
-                        </CardHeader>
-                        <div className="flex-1 flex flex-col h-[60vh]">
-                            <ChatRoom
-                                messages={chat.messages}
-                                user={user}
-                                csUser={chat.cs || users.cs}
-                                onSendMessage={(content, file) => handleSendMessage(chat.id, content, file)}
-                                category={chat.category}
-                                onCategoryChange={() => {}}
-                                isCategoryDisabled={true}
-                            />
-                        </div>
-                    </Card>
-                ))}
-                 <Card className="rounded-2xl shadow-md border-dashed h-full flex items-center justify-center">
-                    <div className="text-center p-8">
-                        <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">Slot Kosong</h3>
-                        <p className="text-sm text-muted-foreground mb-4">Anda bisa menerima permintaan konsultasi baru.</p>
-                        <Button variant="outline">
-                            <Plus className="mr-2 h-4 w-4" />
-                            Cari Sesi Baru
-                        </Button>
-                    </div>
-                </Card>
-            </div>
+          </Card>
+      </div>
+    );
+  }
+
+  if (!isCsActive) {
+    return (
+      <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center">
+          <Card className="max-w-lg p-8 rounded-2xl shadow-md">
+            <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary mb-4" />
+            <h1 className="text-2xl font-bold mb-2">Menunggu Tanggapan</h1>
+            <p className="text-muted-foreground">
+                Permintaan konsultasi Anda telah kami terima dan sedang dalam antrian. Mohon tunggu sebentar, tim Customer Support PT USSI akan segera menghubungi Anda.
+            </p>
+          </Card>
+      </div>
+    );
+  }
+
+  // CS is active, show the chat room
+  return (
+    <div className="flex h-[calc(100vh-8rem)] flex-col items-center">
+        <div className="w-full max-w-4xl flex h-full flex-col">
+            <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
+                <ChatRoom
+                    messages={localMessages}
+                    user={user!}
+                    csUser={activeChat.cs || users.cs}
+                    onSendMessage={handleSendMessage}
+                    category={activeChat.category}
+                    onCategoryChange={() => {}} // Category is fixed
+                    isCategoryDisabled={true}
+                />
+            </Card>
         </div>
-        <CloseConsultationModal 
-            isOpen={isCloseModalOpen}
-            onClose={() => setIsCloseModalOpen(false)}
-            onSubmit={handleCloseConsultation}
-        />
-    </>
+    </div>
   );
 }
