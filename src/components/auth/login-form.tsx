@@ -1,3 +1,4 @@
+
 'use client';
 
 import * as React from 'react';
@@ -44,17 +45,25 @@ export function LoginForm() {
 
   const onSubmit = async (data: UserFormValue) => {
     setIsLoading(true);
-    // Simulate API call
     await new Promise((resolve) => setTimeout(resolve, 1000));
     
-    const success = login(data.email);
+    const loggedInUser = login(data.email);
     
     setIsLoading(false);
     
-    if (success) {
+    if (loggedInUser) {
+        let description = 'Selamat datang!';
+        if (loggedInUser.role === 'client') {
+            description = 'Selamat berkonsultasi, MitraLine!';
+        } else if (loggedInUser.role === 'cs') {
+            description = 'Selamat bertugas, Tim Support!';
+        } else if (loggedInUser.role === 'atasan') {
+            description = 'Selamat datang, Pemimpin!';
+        }
+
       toast({
         title: 'Login Berhasil',
-        description: 'Selamat berkonsultasi USSIAN!',
+        description: description,
       });
       router.push('/');
     } else {

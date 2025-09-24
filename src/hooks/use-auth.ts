@@ -24,14 +24,14 @@ export function useAuth() {
     }
   }, []);
 
-  const login = useCallback((email: string) => {
+  const login = useCallback((email: string): User | null => {
     // In a real app, you'd fetch this from an API
     const predefinedUser = Object.values(users).find(u => u.email.toLowerCase() === email.toLowerCase());
     
     if (predefinedUser) {
       setUser(predefinedUser);
       localStorage.setItem(AUTH_KEY, JSON.stringify(predefinedUser));
-      return true;
+      return predefinedUser;
     }
 
     // Simulate client login for any other email
@@ -45,7 +45,7 @@ export function useAuth() {
     };
     setUser(clientUser);
     localStorage.setItem(AUTH_KEY, JSON.stringify(clientUser));
-    return true;
+    return clientUser;
   }, []);
 
   const logout = useCallback(() => {
