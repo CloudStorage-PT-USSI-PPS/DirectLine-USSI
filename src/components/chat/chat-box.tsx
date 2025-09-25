@@ -10,13 +10,12 @@ import { CardContent } from '@/components/ui/card';
 
 interface ChatBoxProps {
   messages: ChatMessage[];
-  currentUser: User;
-  csUser: User;
+  currentUser: User | null;
+  csUser: User | null;
   isCsTyping: boolean;
 }
 
 const fallbackUser: User = { id: 'fallback', name: '?', email: '', avatar: '', role: 'client' };
-
 
 export function ChatBox({ messages, currentUser, csUser, isCsTyping }: ChatBoxProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -66,7 +65,7 @@ export function ChatBox({ messages, currentUser, csUser, isCsTyping }: ChatBoxPr
                     : 'bg-card text-foreground rounded-bl-none border'
                 )}
               >
-                <p className="text-sm">{message.content}</p>
+                <p className="text-sm break-words">{message.content}</p>
                 {message.file && (
                     <div className="mt-2 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 p-2 text-xs text-primary-foreground/80">
                         <Paperclip className="h-4 w-4 flex-shrink-0" />

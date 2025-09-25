@@ -136,7 +136,7 @@ function ClientConsultationPage() {
 
   if (error) {
      return (
-        <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center">
+        <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center p-4">
             <Card className="max-w-lg p-8 rounded-2xl shadow-md">
                  <ServerCrash className="mx-auto h-12 w-12 text-destructive mb-4" />
                  <h1 className="text-2xl font-bold mb-2">Terjadi Kesalahan</h1>
@@ -148,10 +148,10 @@ function ClientConsultationPage() {
 
   if (sessionEnded) {
     return (
-      <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center">
+      <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center p-4">
         <Card className="max-w-lg p-8 md:p-12 rounded-2xl shadow-xl">
           <CircleCheck className="mx-auto h-16 w-16 text-green-500 mb-6" />
-          <h1 className="text-3xl font-bold text-primary mb-3">Terima Kasih!</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-primary mb-3">Terima Kasih!</h1>
           <p className="text-muted-foreground mb-8">
             Masukan Anda telah kami terima. Kami di DirectLine berkomitmen untuk terus meningkatkan kualitas layanan demi kepuasan Anda.
           </p>
@@ -165,7 +165,7 @@ function ClientConsultationPage() {
 
   if (!activeChat) {
     return (
-       <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center">
+       <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center p-4">
             <Card className="max-w-lg p-8 rounded-2xl shadow-md">
                 <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <h1 className="text-2xl font-bold mb-2">Belum Ada Konsultasi Aktif</h1>
@@ -193,13 +193,13 @@ function ClientConsultationPage() {
         <div className="w-full max-w-4xl flex h-full flex-col">
             <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
                 <CardHeader className="flex-row items-center justify-between p-4 bg-background border-b">
-                  <CardTitle className="text-xl flex items-center gap-2">
+                  <CardTitle className="text-lg md:text-xl flex items-center gap-2">
                     <MessageSquare className="h-6 w-6"/>
                     Ruang Konsultasi
                   </CardTitle>
                   <Button variant="outline" size="sm" onClick={handleEndChat}>
-                    <LogOut className="mr-2 h-4 w-4"/>
-                    Keluar & Akhiri
+                    <LogOut className="mr-0 md:mr-2 h-4 w-4"/>
+                    <span className="hidden md:inline">Keluar & Akhiri</span>
                   </Button>
                 </CardHeader>
                 <ChatRoom

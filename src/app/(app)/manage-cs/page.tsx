@@ -109,7 +109,7 @@ export default function ManageCsPage() {
     <div className="space-y-6">
       <Card className="rounded-2xl shadow-md">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className='grid gap-1.5'>
               <CardTitle>Manajemen Akun CS</CardTitle>
               <CardDescription>

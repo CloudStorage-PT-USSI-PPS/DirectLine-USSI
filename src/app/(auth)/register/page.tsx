@@ -1,3 +1,4 @@
+
 import { RegisterForm } from '@/components/auth/register-form';
 import { Logo } from '@/components/layout/logo';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

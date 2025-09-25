@@ -136,9 +136,9 @@ function ConsultationWorkspace() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
+    <div className="flex flex-col h-full bg-background p-2 md:p-6">
+      <div className="flex items-center justify-between mb-6 px-4 md:px-0">
+        <div className="flex items-center gap-2 text-xl md:text-2xl font-bold tracking-tight">
           <MessageSquare className="h-6 w-6" />
           <h1>Ruang Konsultasi CS</h1>
         </div>
@@ -150,22 +150,22 @@ function ConsultationWorkspace() {
               <div key={chat.id} className="flex-shrink-0 w-full max-w-sm flex flex-col">
                 <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
                   <CardHeader className="flex-row items-center justify-between p-4 bg-background border-b">
-                    <div className='flex items-center gap-3'>
+                    <div className='flex items-center gap-3 overflow-hidden'>
                       <img src={chat.client.avatar} alt="User Avatar" className="h-8 w-8 rounded-full" />
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-base font-semibold">{chat.client.name}</CardTitle>
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        <CardTitle className="text-base font-semibold truncate">{chat.client.name}</CardTitle>
                         <Badge 
                             variant={
                             chat.category === 'Kritis' ? 'destructive' :
                             chat.category === 'Tinggi' ? 'default' : 'secondary'
                             }
-                            className="capitalize"
+                            className="capitalize flex-shrink-0"
                         >
                             {chat.category}
                         </Badge>
                       </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openCloseModal(chat.id)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={() => openCloseModal(chat.id)}>
                       <X className="h-4 w-4" />
                     </Button>
                   </CardHeader>
@@ -188,7 +188,7 @@ function ConsultationWorkspace() {
           <Card className="flex flex-col items-center justify-center rounded-2xl shadow-md p-8 flex-1">
             <MessageSquare className="h-16 w-16 text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold">Tidak Ada Konsultasi Aktif</h2>
-            <p className="text-muted-foreground mt-2">Pilih sesi dari halaman dashboard untuk memulai.</p>
+            <p className="text-muted-foreground mt-2 text-center">Pilih sesi dari halaman dashboard untuk memulai.</p>
           </Card>
         )}
       </div>
