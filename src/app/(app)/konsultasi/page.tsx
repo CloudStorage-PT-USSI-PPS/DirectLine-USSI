@@ -16,13 +16,16 @@ function ClientConsultationPage() {
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const [activeChat, setActiveChat] = useState<Chat | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Simulate an active chat by default for demonstration
+  const [activeChat, setActiveChat] = useState<Chat | null>(chatHistory[0]); 
+  const [isLoading, setIsLoading] = useState(false); // Set to false to show chat immediately
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // The previous logic for finding active chat is commented out for demo purposes
+    /*
     if (!user) return;
-
+    setIsLoading(true);
     try {
       const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
       const activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
@@ -39,7 +42,12 @@ function ClientConsultationPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+    */
+     // For demo, we just ensure a chat is loaded.
+     if (!activeChat) {
+        setActiveChat(chatHistory[0]);
+     }
+  }, [user, activeChat]);
 
   const handleSendMessage = async (content: string, file?: File) => {
     if (!user || !activeChat) return;
@@ -123,27 +131,6 @@ function ClientConsultationPage() {
   }
 
   if (!activeChat) {
-    // Check if there are any sessions waiting at all
-    let waitingSession = false;
-     if (typeof window !== 'undefined') {
-        const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-        waitingSession = allConsultations.some(c => c.client.id === user?.id);
-    }
-
-    if (waitingSession) {
-         return (
-            <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center">
-                <Card className="max-w-lg p-8 rounded-2xl shadow-md">
-                    <Clock className="mx-auto h-12 w-12 text-primary mb-4" />
-                    <h1 className="text-2xl font-bold mb-2">Menunggu Tanggapan</h1>
-                    <p className="text-muted-foreground">
-                        Permintaan konsultasi Anda telah kami terima dan sedang dalam antrian. Mohon tunggu sebentar, tim Customer Support PT USSI akan segera menghubungi Anda.
-                    </p>
-                </Card>
-            </div>
-        );
-    }
-
     return (
        <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center">
             <Card className="max-w-lg p-8 rounded-2xl shadow-md">
