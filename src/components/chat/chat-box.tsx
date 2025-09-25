@@ -5,7 +5,7 @@ import { Bot, Paperclip } from 'lucide-react';
 import type { ChatMessage, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent } from '@/components/ui/card';
+import { CardContent } from '@/components/ui/card';
 
 interface ChatBoxProps {
   messages: ChatMessage[];
@@ -59,7 +59,7 @@ export function ChatBox({ messages, currentUser, csUser, isCsTyping }: ChatBoxPr
                   'max-w-xs md:max-w-md lg:max-w-lg rounded-2xl px-4 py-3 shadow-md',
                   isClient
                     ? 'bg-primary text-primary-foreground rounded-br-none'
-                    : 'bg-muted text-foreground rounded-bl-none'
+                    : 'bg-card text-foreground rounded-bl-none border'
                 )}
               >
                 <p className="text-sm">{message.content}</p>
