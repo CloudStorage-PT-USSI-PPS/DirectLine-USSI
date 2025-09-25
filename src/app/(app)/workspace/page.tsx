@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -142,9 +141,6 @@ function ConsultationWorkspace() {
           <h1>Ruang Konsultasi CS</h1>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm">
-            Riwayat
-          </Button>
           <div className="relative">
             <img src="/path/to/profile-image.jpg" alt="Profile" className="h-8 w-8 rounded-full" />
           </div>
