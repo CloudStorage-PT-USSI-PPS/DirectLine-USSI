@@ -135,16 +135,13 @@ function ConsultationWorkspace() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-100 dark:bg-gray-900 p-6">
+    <div className="flex flex-col h-full bg-background p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
           <MessageSquare className="h-6 w-6" />
           <h1>Ruang Konsultasi CS</h1>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm">
-            Konsultasi
-          </Button>
           <Button variant="ghost" size="sm">
             Riwayat
           </Button>
@@ -159,7 +156,7 @@ function ConsultationWorkspace() {
             {activeChats.map(chat => (
               <div key={chat.id} className="flex-shrink-0 w-full max-w-sm flex flex-col">
                 <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
-                  <CardHeader className="flex-row items-center justify-between p-4 bg-white dark:bg-gray-800 border-b">
+                  <CardHeader className="flex-row items-center justify-between p-4 bg-background border-b">
                     <div className='flex items-center gap-2'>
                       <img src="/path/to/user-avatar.jpg" alt="User Avatar" className="h-8 w-8 rounded-full" />
                       <CardTitle className="text-base font-semibold">{chat.client.name}</CardTitle>
@@ -184,7 +181,7 @@ function ConsultationWorkspace() {
             ))}
             <div className="flex-shrink-0 w-full max-w-sm flex flex-col">
               <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
-                <CardHeader className="flex-row items-center justify-between p-4 bg-white dark:bg-gray-800 border-b">
+                <CardHeader className="flex-row items-center justify-between p-4 bg-background border-b">
                   <div className='grid gap-1.5'>
                     <CardTitle className="text-base">Kolom Lain</CardTitle>
                   </div>
