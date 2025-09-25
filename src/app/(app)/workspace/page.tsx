@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -139,11 +140,6 @@ function ConsultationWorkspace() {
         <div className="flex items-center gap-2 text-2xl font-bold tracking-tight">
           <MessageSquare className="h-6 w-6" />
           <h1>Ruang Konsultasi CS</h1>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="relative">
-            <img src="/path/to/profile-image.jpg" alt="Profile" className="h-8 w-8 rounded-full" />
-          </div>
         </div>
       </div>
       <div className="flex-1 flex gap-6 pb-4 overflow-x-auto">
