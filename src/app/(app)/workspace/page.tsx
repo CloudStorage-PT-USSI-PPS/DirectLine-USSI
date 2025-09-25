@@ -10,12 +10,6 @@ import { MessageSquare, X } from 'lucide-react';
 import { ChatRoom } from '@/components/chat/chat-room';
 import { Button } from '@/components/ui/button';
 import { CloseConsultationModal } from '@/components/chat/close-consultation-modal';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 function ConsultationWorkspace() {
   const searchParams = useSearchParams();
@@ -148,9 +142,6 @@ function ConsultationWorkspace() {
           <h1>Ruang Konsultasi CS</h1>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm">
-            Dashboard
-          </Button>
           <Button variant="ghost" size="sm">
             Konsultasi
           </Button>
