@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -14,6 +15,9 @@ interface ChatBoxProps {
   isCsTyping: boolean;
 }
 
+const fallbackUser: User = { id: 'fallback', name: '?', email: '', avatar: '', role: 'client' };
+
+
 export function ChatBox({ messages, currentUser, csUser, isCsTyping }: ChatBoxProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +33,7 @@ export function ChatBox({ messages, currentUser, csUser, isCsTyping }: ChatBoxPr
         {messages.map((message) => {
           const isClient = message.author === 'client';
           const isSystem = message.author === 'system';
-          const authorUser = isClient ? currentUser : csUser;
+          const authorUser = isClient ? (currentUser || fallbackUser) : (csUser || fallbackUser);
 
           if (isSystem) {
             return (
@@ -83,8 +87,8 @@ export function ChatBox({ messages, currentUser, csUser, isCsTyping }: ChatBoxPr
         {isCsTyping && (
           <div className="flex items-end gap-3 justify-start">
              <Avatar className="h-8 w-8">
-              <AvatarImage src={csUser.avatar} alt={csUser.name} />
-              <AvatarFallback>{csUser.name.charAt(0)}</AvatarFallback>
+              <AvatarImage src={csUser?.avatar} alt={csUser?.name} />
+              <AvatarFallback>{csUser?.name?.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="bg-muted rounded-2xl rounded-bl-none px-4 py-3 shadow-md">
                 <div className="flex items-center gap-1.5">

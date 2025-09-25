@@ -145,13 +145,22 @@ function ClientConsultationPage() {
     );
   }
 
+  if (!user) {
+    return (
+       <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <p className="mt-4 text-muted-foreground">Memuat data pengguna...</p>
+      </div>
+    )
+  }
+
   return (
      <div className="flex h-[calc(100vh-8rem-2rem)] flex-col items-center">
         <div className="w-full max-w-4xl flex h-full flex-col">
             <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
                 <ChatRoom
                     messages={activeChat.messages}
-                    user={user!}
+                    user={user}
                     csUser={activeChat.cs || users.cs}
                     onSendMessage={handleSendMessage}
                     category={activeChat.category}
