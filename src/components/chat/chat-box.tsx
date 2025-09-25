@@ -64,7 +64,7 @@ export function ChatBox({ messages, currentUser, csUser, isCsTyping }: ChatBoxPr
               >
                 <p className="text-sm">{message.content}</p>
                 {message.file && (
-                    <div className="mt-2 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 p-2 text-xs">
+                    <div className="mt-2 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 p-2 text-xs text-primary-foreground/80">
                         <Paperclip className="h-4 w-4 flex-shrink-0" />
                         <span className="truncate">{message.file.name}</span>
                     </div>
