@@ -150,7 +150,7 @@ function ConsultationWorkspace() {
                 <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
                   <CardHeader className="flex-row items-center justify-between p-4 bg-background border-b">
                     <div className='flex items-center gap-2'>
-                      <img src="/path/to/user-avatar.jpg" alt="User Avatar" className="h-8 w-8 rounded-full" />
+                      <img src={chat.client.avatar} alt="User Avatar" className="h-8 w-8 rounded-full" />
                       <CardTitle className="text-base font-semibold">{chat.client.name}</CardTitle>
                     </div>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openCloseModal(chat.id)}>
@@ -171,28 +171,6 @@ function ConsultationWorkspace() {
                 </Card>
               </div>
             ))}
-            <div className="flex-shrink-0 w-full max-w-sm flex flex-col">
-              <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
-                <CardHeader className="flex-row items-center justify-between p-4 bg-background border-b">
-                  <div className='grid gap-1.5'>
-                    <CardTitle className="text-base">Kolom Lain</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-1 flex flex-col p-4">
-                  {/* Isi untuk kolom lain, seperti daftar chat yang belum diambil */}
-                  <div className="space-y-2">
-                    <div className="p-2 border rounded-md">
-                      <p className="font-medium">Konsultasi Baru 1</p>
-                      <p className="text-sm text-gray-500">Dari: User A</p>
-                    </div>
-                    <div className="p-2 border rounded-md">
-                      <p className="font-medium">Konsultasi Baru 2</p>
-                      <p className="text-sm text-gray-500">Dari: User B</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
           </>
         ) : (
           <Card className="flex flex-col items-center justify-center rounded-2xl shadow-md p-8 flex-1">
