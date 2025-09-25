@@ -10,6 +10,7 @@ import { MessageSquare, X } from 'lucide-react';
 import { ChatRoom } from '@/components/chat/chat-room';
 import { Button } from '@/components/ui/button';
 import { CloseConsultationModal } from '@/components/chat/close-consultation-modal';
+import { Badge } from '@/components/ui/badge';
 
 function ConsultationWorkspace() {
   const searchParams = useSearchParams();
@@ -41,7 +42,7 @@ function ConsultationWorkspace() {
         }
       });
 
-      const sessionsToLoad = currentActiveSessions.length > 0 ? currentActiveSessions : chatHistory.slice(0, 3).map(c => c.id);
+      const sessionsToLoad = currentActiveSessions.length > 0 ? currentActiveSessions : chatHistory.slice(0, 2).map(c => c.id);
 
       const chatsToDisplay = sessionsToLoad
         .map(id => uniqueChatMap.get(id))
@@ -54,7 +55,7 @@ function ConsultationWorkspace() {
       if(chatFromHistory) {
         setActiveChats([chatFromHistory]);
       } else {
-        setActiveChats(chatHistory.slice(0, 3));
+        setActiveChats(chatHistory.slice(0, 2));
       }
     }
   }, [searchParams]);
@@ -149,9 +150,20 @@ function ConsultationWorkspace() {
               <div key={chat.id} className="flex-shrink-0 w-full max-w-sm flex flex-col">
                 <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
                   <CardHeader className="flex-row items-center justify-between p-4 bg-background border-b">
-                    <div className='flex items-center gap-2'>
+                    <div className='flex items-center gap-3'>
                       <img src={chat.client.avatar} alt="User Avatar" className="h-8 w-8 rounded-full" />
-                      <CardTitle className="text-base font-semibold">{chat.client.name}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-base font-semibold">{chat.client.name}</CardTitle>
+                        <Badge 
+                            variant={
+                            chat.category === 'Kritis' ? 'destructive' :
+                            chat.category === 'Tinggi' ? 'default' : 'secondary'
+                            }
+                            className="capitalize"
+                        >
+                            {chat.category}
+                        </Badge>
+                      </div>
                     </div>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openCloseModal(chat.id)}>
                       <X className="h-4 w-4" />
