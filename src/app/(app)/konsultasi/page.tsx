@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/use-auth';
 import type { Chat, ChatMessage, User } from '@/lib/types';
 import { users, chatHistory } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, MessageSquare, Clock, ServerCrash, LogOut } from 'lucide-react';
+import { Loader2, MessageSquare, Clock, ServerCrash, LogOut, CircleCheck } from 'lucide-react';
 import { ChatRoom } from '@/components/chat/chat-room';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,14 +22,27 @@ function ClientConsultationPage() {
   const [isLoading, setIsLoading] = useState(false); // Set to false to show chat immediately
   const [error, setError] = useState<string | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [sessionEnded, setSessionEnded] = useState(false);
 
 
   useEffect(() => {
     // For demo, we just ensure a chat is loaded.
-     if (!activeChat) {
-        setActiveChat(chatHistory[0]);
+     if (!activeChat && !sessionEnded) {
+        // Find an active session from sessionStorage or use a mock one
+        try {
+            const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+            const activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
+            const clientActiveSession = allConsultations.find(chat => 
+                chat.client.id === user?.id && activeCsSessionIds.includes(chat.id)
+            );
+            setActiveChat(clientActiveSession || null);
+        } catch (e) {
+            console.error("Failed to load active session", e);
+            // Fallback for demo
+            setActiveChat(chatHistory[0]);
+        }
      }
-  }, [user, activeChat]);
+  }, [user, activeChat, sessionEnded]);
 
   const handleSendMessage = async (content: string, file?: File) => {
     if (!user || !activeChat) return;
@@ -103,6 +116,12 @@ function ClientConsultationPage() {
     });
     setShowFeedbackModal(false);
     setActiveChat(null); // End the active session
+    setSessionEnded(true); // Show the thank you screen
+  };
+
+  const handleStartNewConsultation = () => {
+    setSessionEnded(false);
+    router.push('/chat');
   };
 
 
@@ -124,6 +143,23 @@ function ClientConsultationPage() {
                  <p className="text-muted-foreground">{error}</p>
             </Card>
         </div>
+    );
+  }
+
+  if (sessionEnded) {
+    return (
+      <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center">
+        <Card className="max-w-lg p-8 md:p-12 rounded-2xl shadow-xl">
+          <CircleCheck className="mx-auto h-16 w-16 text-green-500 mb-6" />
+          <h1 className="text-3xl font-bold text-primary mb-3">Terima Kasih!</h1>
+          <p className="text-muted-foreground mb-8">
+            Masukan Anda telah kami terima. Kami di DirectLine berkomitmen untuk terus meningkatkan kualitas layanan demi kepuasan Anda.
+          </p>
+          <Button size="lg" onClick={handleStartNewConsultation}>
+            Mulai Konsultasi Baru
+          </Button>
+        </Card>
+      </div>
     );
   }
 
