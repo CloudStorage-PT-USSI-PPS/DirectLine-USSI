@@ -143,29 +143,31 @@ function ConsultationWorkspace() {
         <h1>Ruang Konsultasi CS</h1>
       </div>
       {activeChats.length > 0 ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="flex gap-6 pb-4 overflow-x-auto">
           {activeChats.map(chat => (
-            <Card key={chat.id} className="flex flex-col rounded-2xl shadow-md overflow-hidden h-[75vh]">
-              <CardHeader className="flex-row items-center justify-between">
-                <div className='grid gap-1.5'>
-                    <CardTitle className="text-base">{chat.client.name}</CardTitle>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openCloseModal(chat.id)}>
-                    <X className="h-4 w-4" />
-                </Button>
-              </CardHeader>
-               <CardContent className="flex-1 flex flex-col p-0">
-                  <ChatRoom
-                    messages={chat.messages}
-                    user={users.cs} 
-                    csUser={chat.cs || users.cs}
-                    onSendMessage={(content, file) => handleSendMessage(chat.id, content, file)}
-                    category={chat.category}
-                    onCategoryChange={(newCategory) => handleCategoryChange(chat.id, newCategory)}
-                    isCategoryDisabled={false}
-                  />
-              </CardContent>
-            </Card>
+            <div key={chat.id} className="flex-shrink-0 w-full max-w-sm lg:max-w-md xl:max-w-lg">
+                <Card className="flex flex-col rounded-2xl shadow-md overflow-hidden h-[75vh]">
+                <CardHeader className="flex-row items-center justify-between">
+                    <div className='grid gap-1.5'>
+                        <CardTitle className="text-base">{chat.client.name}</CardTitle>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openCloseModal(chat.id)}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col p-0">
+                    <ChatRoom
+                        messages={chat.messages}
+                        user={users.cs} 
+                        csUser={chat.cs || users.cs}
+                        onSendMessage={(content, file) => handleSendMessage(chat.id, content, file)}
+                        category={chat.category}
+                        onCategoryChange={(newCategory) => handleCategoryChange(chat.id, newCategory)}
+                        isCategoryDisabled={false}
+                    />
+                </CardContent>
+                </Card>
+            </div>
           ))}
         </div>
       ) : (
@@ -188,5 +190,3 @@ function ConsultationWorkspace() {
 export default function CsWorkspacePage() {
     return <ConsultationWorkspace />;
 }
-
-    
