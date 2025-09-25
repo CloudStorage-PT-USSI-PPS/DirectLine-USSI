@@ -137,16 +137,16 @@ function ConsultationWorkspace() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 h-[calc(100vh-8rem-4rem)]">
       <div className="flex items-center justify-center gap-2 text-2xl font-bold tracking-tight">
         <MessageSquare className="h-6 w-6" />
         <h1>Ruang Konsultasi CS</h1>
       </div>
       {activeChats.length > 0 ? (
-        <div className="flex gap-6 pb-4 overflow-x-auto">
+        <div className="flex flex-1 gap-6 pb-4 overflow-x-auto">
           {activeChats.map(chat => (
-            <div key={chat.id} className="flex-shrink-0 w-full max-w-sm">
-                <Card className="flex flex-col rounded-2xl shadow-md overflow-hidden h-[75vh]">
+            <div key={chat.id} className="flex-shrink-0 w-full max-w-sm flex flex-col">
+                <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
                 <CardHeader className="flex-row items-center justify-between">
                     <div className='grid gap-1.5'>
                         <CardTitle className="text-base">{chat.client.name}</CardTitle>
