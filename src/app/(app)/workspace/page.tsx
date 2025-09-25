@@ -145,7 +145,7 @@ function ConsultationWorkspace() {
       {activeChats.length > 0 ? (
         <div className="flex gap-6 pb-4 overflow-x-auto">
           {activeChats.map(chat => (
-            <div key={chat.id} className="flex-shrink-0 w-full max-w-sm lg:max-w-md xl:max-w-lg">
+            <div key={chat.id} className="flex-shrink-0 w-full max-w-sm">
                 <Card className="flex flex-col rounded-2xl shadow-md overflow-hidden h-[75vh]">
                 <CardHeader className="flex-row items-center justify-between">
                     <div className='grid gap-1.5'>
