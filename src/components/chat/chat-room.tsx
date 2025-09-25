@@ -3,7 +3,6 @@
 
 import { useState } from 'react';
 import type { ChatCategory, ChatMessage, User } from '@/lib/types';
-import { Card } from '@/components/ui/card';
 import { ChatBox } from '@/components/chat/chat-box';
 import { MessageInput } from '@/components/chat/message-input';
 
@@ -29,13 +28,18 @@ export function ChatRoom({
   const [isCsTyping, setIsCsTyping] = useState(false);
 
   const handleSendMessage = async (content: string, file?: File) => {
-    setIsCsTyping(true);
+    // CS doesn't need a typing indicator for their own messages
+    if (user.role !== 'cs') {
+      setIsCsTyping(true);
+    }
     await onSendMessage(content, file);
-    setIsCsTyping(false);
+    if (user.role !== 'cs') {
+      setIsCsTyping(false);
+    }
   };
 
   return (
-    <div className="flex flex-1 flex-col h-full">
+    <div className="flex flex-1 flex-col h-full overflow-hidden">
       <ChatBox
         messages={messages}
         currentUser={user}
@@ -51,5 +55,3 @@ export function ChatRoom({
     </div>
   );
 }
-
-    

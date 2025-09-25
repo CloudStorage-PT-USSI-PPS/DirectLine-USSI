@@ -137,7 +137,7 @@ function ConsultationWorkspace() {
   };
 
   return (
-    <div className="flex flex-col gap-6 h-[calc(100vh-8rem-4rem)]">
+    <div className="flex flex-col gap-6 h-[calc(100vh-8rem-2rem)]">
       <div className="flex items-center justify-center gap-2 text-2xl font-bold tracking-tight">
         <MessageSquare className="h-6 w-6" />
         <h1>Ruang Konsultasi CS</h1>
@@ -171,7 +171,7 @@ function ConsultationWorkspace() {
           ))}
         </div>
       ) : (
-        <Card className="flex flex-col items-center justify-center rounded-2xl shadow-md p-8 min-h-[400px]">
+        <Card className="flex flex-col items-center justify-center rounded-2xl shadow-md p-8 flex-1">
             <MessageSquare className="h-16 w-16 text-muted-foreground mb-4" />
             <h2 className="text-xl font-semibold">Tidak Ada Konsultasi Aktif</h2>
             <p className="text-muted-foreground mt-2">Pilih sesi dari halaman dashboard untuk memulai.</p>
