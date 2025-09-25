@@ -5,12 +5,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import type { Chat, ChatMessage, User } from '@/lib/types';
 import { users, chatHistory } from '@/lib/data';
-import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, MessageSquare, Clock, ServerCrash } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2, MessageSquare, Clock, ServerCrash, LogOut } from 'lucide-react';
 import { ChatRoom } from '@/components/chat/chat-room';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
+import { FeedbackModal } from '@/components/chat/feedback-modal';
 
 function ClientConsultationPage() {
   const { user } = useAuth();
@@ -20,30 +21,11 @@ function ClientConsultationPage() {
   const [activeChat, setActiveChat] = useState<Chat | null>(chatHistory[0]); 
   const [isLoading, setIsLoading] = useState(false); // Set to false to show chat immediately
   const [error, setError] = useState<string | null>(null);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+
 
   useEffect(() => {
-    // The previous logic for finding active chat is commented out for demo purposes
-    /*
-    if (!user) return;
-    setIsLoading(true);
-    try {
-      const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-      const activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
-
-      const clientActiveSession = allConsultations.find(chat =>
-        chat.client.id === user.id && activeCsSessionIds.includes(chat.id)
-      );
-
-      setActiveChat(clientActiveSession || null);
-
-    } catch (e) {
-      console.error("Failed to check for active sessions", e);
-      setError("Gagal memuat sesi aktif Anda. Silakan coba lagi nanti.");
-    } finally {
-      setIsLoading(false);
-    }
-    */
-     // For demo, we just ensure a chat is loaded.
+    // For demo, we just ensure a chat is loaded.
      if (!activeChat) {
         setActiveChat(chatHistory[0]);
      }
@@ -108,6 +90,21 @@ function ClientConsultationPage() {
     }, 1500);
 
   };
+  
+  const handleEndChat = () => {
+    setShowFeedbackModal(true);
+  }
+
+  const handleFeedbackSubmit = (rating: number, description: string) => {
+    console.log('Feedback submitted:', { rating, description });
+    toast({
+      title: 'Terima Kasih!',
+      description: 'Feedback Anda telah kami terima.',
+    });
+    setShowFeedbackModal(false);
+    setActiveChat(null); // End the active session
+  };
+
 
   if (isLoading) {
     return (
@@ -155,9 +152,20 @@ function ClientConsultationPage() {
   }
 
   return (
+    <>
      <div className="flex h-[calc(100vh-8rem-2rem)] flex-col items-center">
         <div className="w-full max-w-4xl flex h-full flex-col">
             <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
+                <CardHeader className="flex-row items-center justify-between p-4 bg-background border-b">
+                  <CardTitle className="text-xl flex items-center gap-2">
+                    <MessageSquare className="h-6 w-6"/>
+                    Ruang Konsultasi
+                  </CardTitle>
+                  <Button variant="outline" size="sm" onClick={handleEndChat}>
+                    <LogOut className="mr-2 h-4 w-4"/>
+                    Keluar & Akhiri
+                  </Button>
+                </CardHeader>
                 <ChatRoom
                     messages={activeChat.messages}
                     user={user}
@@ -170,6 +178,12 @@ function ClientConsultationPage() {
             </Card>
         </div>
     </div>
+    <FeedbackModal
+      isOpen={showFeedbackModal}
+      onClose={() => setShowFeedbackModal(false)}
+      onSubmit={handleFeedbackSubmit}
+    />
+    </>
   );
 }
 
