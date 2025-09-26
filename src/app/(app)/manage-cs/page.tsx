@@ -132,8 +132,12 @@ export default function ManageCsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {csList.map((user) => (
-                <TableRow key={user.id}>
+              {csList.map((user, index) => (
+                <TableRow 
+                  key={user.id}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards', opacity: 0 }}
+                >
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <Avatar>
