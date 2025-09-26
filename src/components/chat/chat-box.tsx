@@ -27,7 +27,7 @@ export function ChatBox({ messages, currentUser, csUser, isCsTyping }: ChatBoxPr
   }, [messages, isCsTyping]);
 
   return (
-    <CardContent className="flex-1 overflow-y-auto p-4 md:p-6" ref={scrollAreaRef}>
+    <div className="flex-1 overflow-y-auto p-4 md:p-6" ref={scrollAreaRef}>
       <div className="space-y-6">
         {messages.map((message) => {
           const isClient = message.author === 'client';
@@ -99,6 +99,6 @@ export function ChatBox({ messages, currentUser, csUser, isCsTyping }: ChatBoxPr
           </div>
         )}
       </div>
-    </CardContent>
+    </div>
   );
 }
