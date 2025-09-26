@@ -17,9 +17,8 @@ function ClientConsultationPage() {
   const { user } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  // Simulate an active chat by default for demonstration
   const [activeChat, setActiveChat] = useState<Chat | null>(null); 
-  const [isLoading, setIsLoading] = useState(true); // Set to true initially
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
@@ -34,18 +33,15 @@ function ClientConsultationPage() {
     try {
         const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
         
-        // Find the most recent consultation for this user that isn't yet in active-cs-sessions
         let clientActiveSession = allConsultations.find(chat => chat.client.id === user.id);
 
         if (clientActiveSession) {
-            // This simulates the CS accepting the chat.
             let activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
             if (!activeCsSessionIds.includes(clientActiveSession.id)) {
                 activeCsSessionIds.push(clientActiveSession.id);
                 sessionStorage.setItem('active-cs-sessions', JSON.stringify(activeCsSessionIds));
             }
         } else {
-            // If no new consultations exist, create a mock one to show the private room
             clientActiveSession = {
                 id: 'chat-mock-active',
                 category: 'Sedang',
@@ -80,7 +76,6 @@ function ClientConsultationPage() {
       ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
     };
 
-    // Simulate updating the chat
     setActiveChat(prev => {
         if (!prev) return null;
         const updatedChat = { ...prev, messages: [...prev.messages, newMessage] };
@@ -97,7 +92,6 @@ function ClientConsultationPage() {
         return updatedChat;
     });
 
-     // Simulate CS reply
     setTimeout(() => {
         const csReply: ChatMessage = {
           id: `cs-msg-${Date.now()}`,
@@ -108,7 +102,6 @@ function ClientConsultationPage() {
         setActiveChat(prev => {
             if (!prev) return null;
             const updatedChat = { ...prev, messages: [...prev.messages, csReply] };
-            // Update sessionStorage again with CS reply
              try {
                 const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
                 const chatIndex = allConsultations.findIndex(c => c.id === activeChat.id);
@@ -141,7 +134,6 @@ function ClientConsultationPage() {
     });
     setShowFeedbackModal(false);
     
-    // Clear the specific active session from storage
     if (activeChat) {
       try {
         const activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
@@ -152,8 +144,8 @@ function ClientConsultationPage() {
       }
     }
 
-    setActiveChat(null); // End the active session in the UI
-    setSessionEnded(true); // Show the thank you screen
+    setActiveChat(null);
+    setSessionEnded(true);
   };
 
   const handleStartNewConsultation = () => {
@@ -173,8 +165,8 @@ function ClientConsultationPage() {
 
   if (error) {
      return (
-        <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center p-4">
-            <Card className="max-w-lg p-8 rounded-2xl shadow-md">
+        <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center p-4 animate-fade-in-up">
+            <Card className="max-w-lg p-8 rounded-2xl shadow-xl">
                  <ServerCrash className="mx-auto h-12 w-12 text-destructive mb-4" />
                  <h1 className="text-2xl font-bold mb-2">Terjadi Kesalahan</h1>
                  <p className="text-muted-foreground">{error}</p>
@@ -185,7 +177,7 @@ function ClientConsultationPage() {
 
   if (sessionEnded) {
     return (
-      <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center p-4">
+      <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center p-4 animate-fade-in-up">
         <Card className="max-w-lg p-8 md:p-12 rounded-2xl shadow-xl">
           <CircleCheck className="mx-auto h-16 w-16 text-green-500 mb-6" />
           <h1 className="text-2xl md:text-3xl font-bold text-primary mb-3">Terima Kasih!</h1>
@@ -201,17 +193,15 @@ function ClientConsultationPage() {
   }
 
   if (!activeChat) {
-     // This case should ideally not be hit frequently with the new logic,
-     // but serves as a fallback.
     return (
-       <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center p-4">
-            <Card className="max-w-lg p-8 rounded-2xl shadow-md">
+       <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center p-4 animate-fade-in-up">
+            <Card className="max-w-lg p-8 rounded-2xl shadow-xl">
                 <Clock className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h1 className="text-2xl font-bold mb-2">Tidak Ada Sesi Aktif</h1>
+                <h1 className="text-2xl font-bold mb-2">Menunggu Antrian</h1>
                 <p className="text-muted-foreground mb-6">
-                   Tidak ada sesi konsultasi yang sedang aktif. Silakan mulai dari halaman Chat.
+                    Permintaan Anda telah kami terima dan akan segera diproses. Mohon menunggu sejenak, tim Customer Support kami akan segera terhubung dengan Anda.
                 </p>
-                <Button onClick={() => router.push('/chat')}>Mulai Konsultasi</Button>
+                <Button onClick={() => router.push('/chat')}>Kembali ke Halaman Chat</Button>
             </Card>
         </div>
     );
@@ -228,17 +218,17 @@ function ClientConsultationPage() {
 
   return (
     <>
-     <div className="flex h-[calc(100vh-8rem-2rem)] flex-col items-center">
+     <div className="flex h-[calc(100vh-8rem-2rem)] flex-col items-center animate-fade-in-up">
         <div className="w-full max-w-4xl flex h-full flex-col">
-            <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
+            <Card className="flex flex-1 flex-col rounded-2xl shadow-xl overflow-hidden">
                 <CardHeader className="flex-row items-center justify-between p-4 bg-background border-b">
-                  <CardTitle className="text-lg md:text-xl flex items-center gap-2">
+                  <CardTitle className="text-lg md:text-xl flex items-center gap-3">
                     <MessageSquare className="h-6 w-6"/>
-                    Ruang Konsultasi
+                    Ruang Konsultasi Privat
                   </CardTitle>
                   <Button variant="outline" size="sm" onClick={handleEndChat}>
                     <LogOut className="mr-0 md:mr-2 h-4 w-4"/>
-                    <span className="hidden md:inline">Keluar & Akhiri</span>
+                    <span className="hidden md:inline">Keluar & Akhiri Sesi</span>
                   </Button>
                 </CardHeader>
                 <ChatRoom
