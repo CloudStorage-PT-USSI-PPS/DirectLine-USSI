@@ -27,18 +27,42 @@ function ClientConsultationPage() {
 
   useEffect(() => {
     setIsLoading(true);
-     if (!user) return;
+    if (!user) return;
 
-    // Find an active session from sessionStorage
+    // Simulate that a CS agent has accepted a chat.
+    // In a real app, this would come from a websocket or API call.
     try {
         const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-        const activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
-        const clientActiveSession = allConsultations.find(chat => 
-            chat.client.id === user?.id && activeCsSessionIds.includes(chat.id)
-        );
-        setActiveChat(clientActiveSession || null);
+        
+        // Find the most recent consultation for this user that isn't yet in active-cs-sessions
+        let clientActiveSession = allConsultations.find(chat => chat.client.id === user.id);
+
+        if (clientActiveSession) {
+            // This simulates the CS accepting the chat.
+            let activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
+            if (!activeCsSessionIds.includes(clientActiveSession.id)) {
+                activeCsSessionIds.push(clientActiveSession.id);
+                sessionStorage.setItem('active-cs-sessions', JSON.stringify(activeCsSessionIds));
+            }
+        } else {
+            // If no new consultations exist, create a mock one to show the private room
+            clientActiveSession = {
+                id: 'chat-mock-active',
+                category: 'Sedang',
+                date: new Date().toISOString().split('T')[0],
+                client: user,
+                cs: users.cs2,
+                messages: [
+                    { id: 'mock-msg-1', author: 'client', content: 'Halo, saya butuh bantuan.', timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })},
+                    { id: 'mock-msg-2', author: 'cs', content: 'Tentu, dengan senang hati. Ada yang bisa saya bantu?', timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                ],
+            }
+        }
+        
+        setActiveChat(clientActiveSession);
+
     } catch (e) {
-        console.error("Failed to load active session", e);
+        console.error("Failed to load or create active session", e);
         setError("Gagal memuat sesi konsultasi Anda. Silakan coba lagi nanti.");
     } finally {
         setIsLoading(false);
@@ -142,7 +166,7 @@ function ClientConsultationPage() {
     return (
       <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        <p className="mt-4 text-muted-foreground">Mencari sesi aktif...</p>
+        <p className="mt-4 text-muted-foreground">Mempersiapkan Ruang Konsultasi...</p>
       </div>
     );
   }
@@ -177,15 +201,17 @@ function ClientConsultationPage() {
   }
 
   if (!activeChat) {
+     // This case should ideally not be hit frequently with the new logic,
+     // but serves as a fallback.
     return (
        <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center p-4">
             <Card className="max-w-lg p-8 rounded-2xl shadow-md">
                 <Clock className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h1 className="text-2xl font-bold mb-2">Menunggu Antrian</h1>
+                <h1 className="text-2xl font-bold mb-2">Tidak Ada Sesi Aktif</h1>
                 <p className="text-muted-foreground mb-6">
-                   Permintaan Anda telah kami terima dan akan segera diproses. Mohon menunggu sejenak, tim Customer Support kami akan segera terhubung dengan Anda.
+                   Tidak ada sesi konsultasi yang sedang aktif. Silakan mulai dari halaman Chat.
                 </p>
-                <Button onClick={() => router.push('/chat')}>Buat Konsultasi Lain</Button>
+                <Button onClick={() => router.push('/chat')}>Mulai Konsultasi</Button>
             </Card>
         </div>
     );
