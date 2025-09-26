@@ -6,7 +6,6 @@ import { Bot, Paperclip } from 'lucide-react';
 import type { ChatMessage, User } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CardContent } from '@/components/ui/card';
 
 interface ChatBoxProps {
   messages: ChatMessage[];
@@ -102,3 +101,5 @@ export function ChatBox({ messages, currentUser, csUser, isCsTyping }: ChatBoxPr
     </div>
   );
 }
+
+    

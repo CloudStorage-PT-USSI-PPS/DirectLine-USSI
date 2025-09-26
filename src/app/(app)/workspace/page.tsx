@@ -149,7 +149,7 @@ function ConsultationWorkspace() {
             {activeChats.map((chat, index) => (
               <div 
                 key={chat.id} 
-                className="flex-shrink-0 w-full max-w-sm flex flex-col animate-fade-in-up"
+                className="flex flex-col flex-shrink-0 w-full max-w-sm animate-fade-in-up"
                 style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards', opacity: 0 }}
               >
                 <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
@@ -173,7 +173,6 @@ function ConsultationWorkspace() {
                       <X className="h-4 w-4" />
                     </Button>
                   </CardHeader>
-                  <CardContent className="flex-1 flex flex-col p-0">
                     <ChatRoom
                       messages={chat.messages}
                       user={users.cs}
@@ -183,7 +182,6 @@ function ConsultationWorkspace() {
                       onCategoryChange={(newCategory) => handleCategoryChange(chat.id, newCategory)}
                       isCategoryDisabled={false}
                     />
-                  </CardContent>
                 </Card>
               </div>
             ))}
@@ -211,3 +209,6 @@ export default function CsWorkspacePage() {
   return <ConsultationWorkspace />;
 }
 
+
+
+    
