@@ -18,31 +18,32 @@ function ClientConsultationPage() {
   const router = useRouter();
   const { toast } = useToast();
   // Simulate an active chat by default for demonstration
-  const [activeChat, setActiveChat] = useState<Chat | null>(chatHistory[0]); 
-  const [isLoading, setIsLoading] = useState(false); // Set to false to show chat immediately
+  const [activeChat, setActiveChat] = useState<Chat | null>(null); 
+  const [isLoading, setIsLoading] = useState(true); // Set to true initially
   const [error, setError] = useState<string | null>(null);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
 
 
   useEffect(() => {
-    // For demo, we just ensure a chat is loaded.
-     if (!activeChat && !sessionEnded) {
-        // Find an active session from sessionStorage or use a mock one
-        try {
-            const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-            const activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
-            const clientActiveSession = allConsultations.find(chat => 
-                chat.client.id === user?.id && activeCsSessionIds.includes(chat.id)
-            );
-            setActiveChat(clientActiveSession || null);
-        } catch (e) {
-            console.error("Failed to load active session", e);
-            // Fallback for demo
-            setActiveChat(chatHistory[0]);
-        }
-     }
-  }, [user, activeChat, sessionEnded]);
+    setIsLoading(true);
+     if (!user) return;
+
+    // Find an active session from sessionStorage
+    try {
+        const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+        const activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
+        const clientActiveSession = allConsultations.find(chat => 
+            chat.client.id === user?.id && activeCsSessionIds.includes(chat.id)
+        );
+        setActiveChat(clientActiveSession || null);
+    } catch (e) {
+        console.error("Failed to load active session", e);
+        setError("Gagal memuat sesi konsultasi Anda. Silakan coba lagi nanti.");
+    } finally {
+        setIsLoading(false);
+    }
+  }, [user]);
 
   const handleSendMessage = async (content: string, file?: File) => {
     if (!user || !activeChat) return;
@@ -115,7 +116,19 @@ function ClientConsultationPage() {
       description: 'Feedback Anda telah kami terima.',
     });
     setShowFeedbackModal(false);
-    setActiveChat(null); // End the active session
+    
+    // Clear the specific active session from storage
+    if (activeChat) {
+      try {
+        const activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
+        const updatedActiveSessions = activeCsSessionIds.filter(id => id !== activeChat.id);
+        sessionStorage.setItem('active-cs-sessions', JSON.stringify(updatedActiveSessions));
+      } catch (e) {
+        console.error("Failed to clear active session", e);
+      }
+    }
+
+    setActiveChat(null); // End the active session in the UI
     setSessionEnded(true); // Show the thank you screen
   };
 
@@ -167,12 +180,12 @@ function ClientConsultationPage() {
     return (
        <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center text-center p-4">
             <Card className="max-w-lg p-8 rounded-2xl shadow-md">
-                <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <h1 className="text-2xl font-bold mb-2">Belum Ada Konsultasi Aktif</h1>
+                <Clock className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h1 className="text-2xl font-bold mb-2">Menunggu Antrian</h1>
                 <p className="text-muted-foreground mb-6">
-                   Anda belum memiliki sesi konsultasi yang sedang ditanggapi oleh CS.
+                   Permintaan Anda telah kami terima dan akan segera diproses. Mohon menunggu sejenak, tim Customer Support kami akan segera terhubung dengan Anda.
                 </p>
-                <Button onClick={() => router.push('/chat')}>Mulai Konsultasi Baru</Button>
+                <Button onClick={() => router.push('/chat')}>Buat Konsultasi Lain</Button>
             </Card>
         </div>
     );
