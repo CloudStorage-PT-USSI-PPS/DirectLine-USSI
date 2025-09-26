@@ -20,7 +20,7 @@ import { Menu } from 'lucide-react';
 import { useState } from 'react';
 
 const clientNavItems = [
-  { href: '/chat', label: 'Chat', icon: MessageSquare },
+  { href: '/chat', label: 'Permintaan', icon: MessageSquare },
   { href: '/konsultasi', label: 'Konsultasi', icon: Users },
   { href: '/history', label: 'Riwayat', icon: History },
 ];
