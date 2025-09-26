@@ -19,24 +19,31 @@ import { ChatRoom } from '@/components/chat/chat-room';
 
 
 const AvailableCS = ({ csList }: { csList: User[] }) => (
-  <Card className="hidden lg:block w-full lg:max-w-xs rounded-2xl shadow-md">
+  <Card 
+    className="hidden lg:block w-full lg:max-w-xs rounded-2xl shadow-md animate-fade-in-up"
+    style={{ animationDelay: '200ms', animationFillMode: 'forwards', opacity: 0 }}
+  >
     <CardHeader>
-      <CardTitle className="flex items-center gap-2">
-        <Users className="h-5 w-5" />
+      <CardTitle className="flex items-center gap-3">
+        <Users className="h-6 w-6" />
         CS Tersedia
       </CardTitle>
     </CardHeader>
-    <CardContent className="space-y-4 pt-6">
-      {csList.map(cs => (
-        <div key={cs.id} className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
+    <CardContent className="space-y-4 pt-4">
+      {csList.map((cs, index) => (
+        <div 
+            key={cs.id} 
+            className="flex items-center gap-4 animate-fade-in-up"
+            style={{ animationDelay: `${300 + index * 100}ms`, animationFillMode: 'forwards', opacity: 0 }}
+        >
+          <Avatar className="h-11 w-11 border-2 border-primary/20">
             <AvatarImage src={cs.avatar} alt={cs.name} />
             <AvatarFallback>{cs.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <p className="font-semibold">{cs.name}</p>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Circle className="h-2 w-2 fill-green-500 text-green-500" />
+            <p className="font-semibold text-base">{cs.name}</p>
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Circle className="h-2.5 w-2.5 fill-green-500 text-green-500" />
               <span>Online</span>
             </div>
           </div>
@@ -241,34 +248,38 @@ export default function ChatPage() {
         onClose={handleCloseModal}
         onSubmit={handleStartConsultation}
       />
-      <div className="flex h-[calc(100vh-8rem)] flex-col items-center justify-center">
-        <div className="w-full max-w-6xl flex flex-col gap-6 h-full">
-            <div className="flex items-center justify-center gap-2 text-2xl font-bold tracking-tight">
-              <MessageSquare className="h-6 w-6" />
-              <h1>Ruang Konsultasi</h1>
-            </div>
-            <div className="flex flex-1 gap-6 overflow-hidden">
-              <div className="flex-1 flex flex-col h-full">
-                {hasSessionStarted || messages.length > 0 ? (
-                   <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
-                      <ChatRoom
-                        messages={messages}
-                        user={user}
-                        csUser={activeChat?.cs || users.cs}
-                        onSendMessage={handleSendMessage}
-                        isCategoryDisabled={true}
-                        category={category}
-                        onCategoryChange={setCategory}
-                      />
-                  </Card>
-                ) : (
-                  <Card className="flex flex-1 items-center justify-center p-4 text-center rounded-2xl shadow-md">
-                    <p className="text-muted-foreground">Memuat sesi konsultasi Anda...</p>
-                  </Card>
-                )}
-              </div>
-              <AvailableCS csList={csList} />
-            </div>
+      <div className="flex h-[calc(100vh-8rem)] flex-col gap-8">
+        <div 
+            className="flex items-center justify-center gap-3 text-3xl font-bold tracking-tight animate-fade-in-up"
+            style={{ animationDelay: '0ms', animationFillMode: 'forwards', opacity: 0 }}
+        >
+          <MessageSquare className="h-8 w-8" />
+          <h1>Ruang Konsultasi</h1>
+        </div>
+        <div className="flex flex-1 gap-8 overflow-hidden">
+          <div 
+            className="flex-1 flex flex-col h-full animate-fade-in-up"
+            style={{ animationDelay: '100ms', animationFillMode: 'forwards', opacity: 0 }}
+          >
+            {hasSessionStarted || messages.length > 0 ? (
+               <Card className="flex flex-1 flex-col rounded-2xl shadow-xl overflow-hidden">
+                  <ChatRoom
+                    messages={messages}
+                    user={user}
+                    csUser={activeChat?.cs || users.cs}
+                    onSendMessage={handleSendMessage}
+                    isCategoryDisabled={true}
+                    category={category}
+                    onCategoryChange={setCategory}
+                  />
+              </Card>
+            ) : (
+              <Card className="flex flex-1 items-center justify-center p-4 text-center rounded-2xl shadow-xl">
+                <p className="text-muted-foreground text-lg">Memuat sesi konsultasi Anda...</p>
+              </Card>
+            )}
+          </div>
+          <AvailableCS csList={csList} />
         </div>
         <FeedbackModal
           isOpen={showFeedbackModal}
