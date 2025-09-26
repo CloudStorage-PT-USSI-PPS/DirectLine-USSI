@@ -61,8 +61,12 @@ export default function CSDashboardPage() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {stats.map((stat) => (
-                <Card key={stat.title} className="rounded-2xl shadow-md">
+            {stats.map((stat, index) => (
+                <Card 
+                  key={stat.title} 
+                  className="rounded-2xl shadow-md animate-fade-in-up"
+                  style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards', opacity: 0 }}
+                >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
                         <stat.icon className="h-4 w-4 text-muted-foreground" />
@@ -75,78 +79,83 @@ export default function CSDashboardPage() {
             ))}
         </div>
       
-      <Card className="rounded-2xl shadow-md overflow-hidden">
-        <CardHeader>
-          <CardTitle>Permintaan Konsultasi Masuk</CardTitle>
-          <CardDescription>Berikut adalah daftar konsultasi terbaru yang membutuhkan perhatian Anda.</CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                    <TableHead>Klien</TableHead>
-                    <TableHead className="hidden md:table-cell">Asal BPR</TableHead>
-                    <TableHead className="hidden sm:table-cell">Tanggal</TableHead>
-                    <TableHead>Kategori</TableHead>
-                    <TableHead className="hidden lg:table-cell">Pesan Awal</TableHead>
-                    <TableHead className="hidden md:table-cell">Lampiran</TableHead>
-                    <TableHead className="text-right">Aksi</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {allConsultations.map((chat) => (
-                        <TableRow key={chat.id}>
-                            <TableCell>
-                                <div className="font-medium">{chat.client.name}</div>
-                                <div className="text-sm text-muted-foreground hidden md:inline">{chat.client.email}</div>
-                            </TableCell>
-                             <TableCell className="hidden md:table-cell">
-                                <div className="flex items-center gap-2">
-                                  <Building className="h-4 w-4 text-muted-foreground"/>
-                                  <span>{chat.client.bprName || '-'}</span>
-                                </div>
-                            </TableCell>
-                            <TableCell className="hidden sm:table-cell">{chat.date}</TableCell>
-                            <TableCell>
-                                <Badge 
-                                    variant={
-                                    chat.category === 'Kritis' ? 'destructive' :
-                                    chat.category === 'Tinggi' ? 'default' : 'secondary'
-                                    }
-                                    className="capitalize"
-                                >
-                                    {chat.category}
-                                </Badge>
-                            </TableCell>
-                            <TableCell className="hidden lg:table-cell max-w-xs truncate">{chat.messages[0].content}</TableCell>
-                            <TableCell className="hidden md:table-cell">
-                                {chat.messages[0].file && (
-                                    <div className='flex items-center justify-center'>
-                                        <Paperclip className="h-4 w-4" />
-                                        <span className='sr-only'>Ada Lampiran</span>
-                                    </div>
-                                )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <Button asChild size="sm">
-                                    <Link href={`/workspace?session=${chat.id}`}>
-                                        Tanggapi
-                                    </Link>
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-        </CardContent>
-        <CardFooter className="justify-end pt-4 border-t">
-            <Button asChild variant="outline">
-                <Link href="/history">
-                    Lihat Semua Riwayat <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-            </Button>
-        </CardFooter>
-      </Card>
+      <div 
+        className="animate-fade-in-up" 
+        style={{ animationDelay: '500ms', animationFillMode: 'forwards', opacity: 0 }}
+      >
+        <Card className="rounded-2xl shadow-md overflow-hidden">
+          <CardHeader>
+            <CardTitle>Permintaan Konsultasi Masuk</CardTitle>
+            <CardDescription>Berikut adalah daftar konsultasi terbaru yang membutuhkan perhatian Anda.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+              <Table>
+                  <TableHeader>
+                      <TableRow>
+                      <TableHead>Klien</TableHead>
+                      <TableHead className="hidden md:table-cell">Asal BPR</TableHead>
+                      <TableHead className="hidden sm:table-cell">Tanggal</TableHead>
+                      <TableHead>Kategori</TableHead>
+                      <TableHead className="hidden lg:table-cell">Pesan Awal</TableHead>
+                      <TableHead className="hidden md:table-cell">Lampiran</TableHead>
+                      <TableHead className="text-right">Aksi</TableHead>
+                      </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                      {allConsultations.map((chat) => (
+                          <TableRow key={chat.id}>
+                              <TableCell>
+                                  <div className="font-medium">{chat.client.name}</div>
+                                  <div className="text-sm text-muted-foreground hidden md:inline">{chat.client.email}</div>
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell">
+                                  <div className="flex items-center gap-2">
+                                    <Building className="h-4 w-4 text-muted-foreground"/>
+                                    <span>{chat.client.bprName || '-'}</span>
+                                  </div>
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell">{chat.date}</TableCell>
+                              <TableCell>
+                                  <Badge 
+                                      variant={
+                                      chat.category === 'Kritis' ? 'destructive' :
+                                      chat.category === 'Tinggi' ? 'default' : 'secondary'
+                                      }
+                                      className="capitalize"
+                                  >
+                                      {chat.category}
+                                  </Badge>
+                              </TableCell>
+                              <TableCell className="hidden lg:table-cell max-w-xs truncate">{chat.messages[0].content}</TableCell>
+                              <TableCell className="hidden md:table-cell">
+                                  {chat.messages[0].file && (
+                                      <div className='flex items-center justify-center'>
+                                          <Paperclip className="h-4 w-4" />
+                                          <span className='sr-only'>Ada Lampiran</span>
+                                      </div>
+                                  )}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                  <Button asChild size="sm">
+                                      <Link href={`/workspace?session=${chat.id}`}>
+                                          Tanggapi
+                                      </Link>
+                                  </Button>
+                              </TableCell>
+                          </TableRow>
+                      ))}
+                  </TableBody>
+              </Table>
+          </CardContent>
+          <CardFooter className="justify-end pt-4 border-t">
+              <Button asChild variant="outline">
+                  <Link href="/history">
+                      Lihat Semua Riwayat <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+              </Button>
+          </CardFooter>
+        </Card>
+      </div>
     </div>
   );
 }
