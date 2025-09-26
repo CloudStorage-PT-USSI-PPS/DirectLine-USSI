@@ -8,9 +8,11 @@ import { chatHistory, users } from '@/lib/data';
 import { ChatBox } from '@/components/chat/chat-box';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function HistoryDetailPage() {
   const params = useParams();
+  const { user: authUser } = useAuth();
   const id = typeof params.id === 'string' ? params.id : '';
   const chat = chatHistory.find((c) => c.id === id);
 
@@ -22,12 +24,14 @@ export default function HistoryDetailPage() {
   const currentUser = users.client;
   const csUser = users.cs;
 
+  const backHref = authUser?.role === 'atasan' ? '/performance-dashboard' : '/history';
+
   return (
     <div className="flex h-[calc(100vh-8rem-2rem)] flex-col items-center">
       <div className="w-full max-w-4xl flex h-full flex-col space-y-4">
         <div className="flex items-center gap-4">
           <Button asChild variant="outline" size="icon">
-              <Link href="/history">
+              <Link href={backHref}>
                   <ChevronLeft className="h-4 w-4" />
                   <span className="sr-only">Kembali</span>
               </Link>
