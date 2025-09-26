@@ -4,23 +4,19 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import type { ChatMessage, ChatCategory, User, Chat } from '@/lib/types';
-import { ChatBox } from '@/components/chat/chat-box';
-import { MessageInput } from '@/components/chat/message-input';
-import { FeedbackModal } from '@/components/chat/feedback-modal';
 import { StartConsultationModal } from '@/components/chat/start-consultation-modal';
 import { users } from '@/lib/data';
 import { useToast } from '@/hooks/use-toast';
 import { initiateConsultationAnalysis } from '@/lib/actions';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { MessageSquare, Users, Circle } from 'lucide-react';
-import { useChatSession } from '@/components/providers/chat-session-provider';
+import { MessageSquare, Users, Circle, PlusCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ChatRoom } from '@/components/chat/chat-room';
-
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 const AvailableCS = ({ csList }: { csList: User[] }) => (
   <Card 
-    className="hidden lg:block w-full lg:max-w-xs rounded-2xl shadow-md animate-fade-in-up"
+    className="w-full lg:max-w-xs rounded-2xl shadow-md animate-fade-in-up"
     style={{ animationDelay: '200ms', animationFillMode: 'forwards', opacity: 0 }}
   >
     <CardHeader>
@@ -53,57 +49,28 @@ const AvailableCS = ({ csList }: { csList: User[] }) => (
   </Card>
 );
 
-export default function ChatPage() {
+export default function RequestPage() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { hasSessionStarted, startSession, messages, addMessage, setMessages, clearMessages } = useChatSession();
-  const [category, setCategory] = useState<ChatCategory>('Sedang');
-  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-  const [showStartModal, setShowStartModal] = useState(true); // Default to true, logic will decide
-  const [activeChat, setActiveChat] = useState<Chat | null>(null);
+  const router = useRouter();
+  const [showStartModal, setShowStartModal] = useState(false);
 
   const csList = Object.values(users).filter(u => u.role === 'cs');
 
- useEffect(() => {
-    if (!user) return;
+  useEffect(() => {
+    // Automatically open the modal if user lands on this page.
+    // We can add logic here to check if there's already an active request.
+    const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
+    const clientActiveSession = allConsultations.find(chat => chat.client.id === user?.id);
 
-    try {
-      const allConsultations: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
-      const activeCsSessionIds: string[] = JSON.parse(sessionStorage.getItem('active-cs-sessions') || '[]');
-      
-      const clientActiveSession = allConsultations.find(chat => 
-        chat.client.id === user.id && activeCsSessionIds.includes(chat.id)
-      );
-
-      if (clientActiveSession) {
-        // An active session exists, load it.
-        setActiveChat(clientActiveSession);
-        setMessages(clientActiveSession.messages);
-        setCategory(clientActiveSession.category);
-        if(!hasSessionStarted) startSession();
-        setShowStartModal(false); // Don't show the start modal
-      } else {
-        // No active session, prepare for a new one.
-        setActiveChat(null);
-        if (messages.length === 0) { // Only show modal if no session has been started at all
-             setShowStartModal(true);
-        } else {
-            setShowStartModal(false);
-        }
-      }
-    } catch (e) {
-      console.error("Failed to check for active sessions", e);
-      setShowStartModal(true); // Fallback to starting a new session
+    if (!clientActiveSession) {
+      setShowStartModal(true);
     }
-  }, [user, hasSessionStarted]);
+  }, [user]);
 
 
-  const handleStartConsultation = (initialMessage: string, category: ChatCategory, file?: File) => {
+  const handleStartConsultation = async (initialMessage: string, category: ChatCategory, file?: File) => {
     if (!user) return;
-  
-    startSession();
-    setCategory(category);
-    setShowStartModal(false);
   
     const firstMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
@@ -118,126 +85,45 @@ export default function ChatPage() {
       category,
       date: new Date().toISOString().split('T')[0],
       client: user,
-      cs: users.cs,
+      cs: users.cs, // Placeholder CS
       messages: [firstMessage],
       rating: undefined,
     };
-    setActiveChat(newChat); // Set as the active chat for this session
   
     try {
       const existingChats: Chat[] = JSON.parse(sessionStorage.getItem('new-consultations') || '[]');
       sessionStorage.setItem('new-consultations', JSON.stringify([newChat, ...existingChats]));
+
+       // AI Analysis
+      const analysis = await initiateConsultationAnalysis({ initialMessage });
+      toast({
+        title: "Permintaan Dianalisis",
+        description: `Kata kunci: "${analysis.keywords}". Tim yang disarankan: ${analysis.suggestedSupportStaff}.`,
+      });
+
     } catch (e) {
-      console.error("Failed to save new consultation to sessionStorage", e);
-    }
-  
-    const welcomeMessage: ChatMessage = {
-      id: 'welcome-msg',
-      author: 'system',
-      content: `Halo USSIANS, selamat datang di DirectLine. Sesi Anda telah dimulai dengan prioritas "${category}".`,
-      timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-    };
-  
-    addMessage(welcomeMessage);
-    handleSendMessage(firstMessage.content, file, firstMessage);
-  };
-  
-
-  const handleCloseModal = () => {
-    if (!hasSessionStarted && messages.length === 0) {
-        startSession(); // Start a session even if they close without submitting
-    }
-    setShowStartModal(false);
-  }
-
-
-  const handleSendMessage = async (content: string, file?: File, existingMessage?: ChatMessage) => {
-    if (!user || (!content.trim() && !file && !existingMessage)) return;
-  
-    let newMessage: ChatMessage;
-    if (existingMessage) {
-        newMessage = existingMessage;
-        addMessage(newMessage);
-    } else {
-        newMessage = {
-          id: `msg-${Date.now()}`,
-          author: 'client',
-          content,
-          timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-          ...(file && { file: { name: file.name, url: URL.createObjectURL(file) } }),
-        };
-        addMessage(newMessage);
-    }
-  
-    // Only analyze the very first client message of the session
-    const isFirstClientMessage = messages.filter(m => m.author === 'client').length === 0;
-  
-    if (isFirstClientMessage && content.trim()) { 
-      try {
-        const analysis = await initiateConsultationAnalysis({ initialMessage: content });
-        const systemMessage: ChatMessage = {
-          id: `system-${Date.now()}`,
-          author: 'system',
-          content: `Menganalisis permintaan... Ditemukan kata kunci: "${analysis.keywords}". Menghubungkan ke tim: ${analysis.suggestedSupportStaff}.`,
-          timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        };
-        addMessage(systemMessage);
-        toast({
-          title: "Konsultasi Dianalisis",
-          description: `Anda akan dihubungkan dengan tim ${analysis.suggestedSupportStaff}.`,
-        });
-      } catch (error) {
-        toast({
+      console.error("Failed to save new consultation or analyze", e);
+       toast({
           title: "Analisis Gagal",
-          description: "Gagal menganalisis permintaan Anda, tetapi kami tetap akan menghubungkan Anda.",
+          description: "Gagal menganalisis permintaan Anda, tetapi permintaan Anda tetap kami kirim.",
           variant: "destructive",
         });
-      }
+    } finally {
+        setShowStartModal(false);
+        toast({
+            title: "Permintaan Terkirim",
+            description: "Permintaan konsultasi Anda telah berhasil dikirim. Silakan tunggu respons dari tim CS.",
+        });
+        // Redirect user to consultation page to wait
+        router.push('/konsultasi');
     }
+  };
   
-    const replyDelay = isFirstClientMessage ? 2500 : 1000;
-    
-    return new Promise<void>(resolve => {
-        setTimeout(() => {
-            const csReply: ChatMessage = {
-              id: `cs-msg-${Date.now()}`,
-              author: 'cs',
-              content: 'Baik, terima kasih atas informasinya. Kami sedang memeriksa masalah Anda.',
-              timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-            };
-            addMessage(csReply);
-            toast({
-              title: "Pesan Baru",
-              description: `Customer Support ${activeChat?.cs?.name || users.cs.name} telah membalas.`,
-            });
-            
-            if (content.toLowerCase().includes('terima kasih')) {
-              setTimeout(() => {
-                const endMessage: ChatMessage = {
-                  id: `end-${Date.now()}`,
-                  author: 'system',
-                  content: 'Sesi konsultasi telah berakhir. Mohon berikan feedback Anda.',
-                  timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-                };
-                addMessage(endMessage);
-                setShowFeedbackModal(true);
-              }, 2000);
-            }
-            resolve();
-          }, replyDelay);
-    });
-  };
-
-  const handleFeedbackSubmit = (rating: number, description: string) => {
-    console.log('Feedback submitted:', { rating, description });
-    toast({
-      title: 'Terima Kasih!',
-      description: 'Feedback Anda telah kami terima.',
-    });
-    setShowFeedbackModal(false);
-    clearMessages(); // Clear messages for next session
-    setActiveChat(null);
-  };
+  const handleCloseModal = () => {
+    setShowStartModal(false);
+    // If user closes modal, maybe redirect them to a dashboard or another relevant page.
+    // For now, we'll just close it.
+  }
   
   if (!user) return null;
 
@@ -248,44 +134,34 @@ export default function ChatPage() {
         onClose={handleCloseModal}
         onSubmit={handleStartConsultation}
       />
-      <div className="flex h-[calc(100vh-8rem)] flex-col gap-8">
+      <div className="flex flex-col gap-8">
         <div 
             className="flex items-center justify-center gap-3 text-3xl font-bold tracking-tight animate-fade-in-up"
             style={{ animationDelay: '0ms', animationFillMode: 'forwards', opacity: 0 }}
         >
           <MessageSquare className="h-8 w-8" />
-          <h1>Ruang Konsultasi</h1>
+          <h1>Permintaan Konsultasi</h1>
         </div>
-        <div className="flex flex-1 gap-8 overflow-hidden">
-          <div 
-            className="flex-1 flex flex-col h-full animate-fade-in-up"
+        <div className="flex flex-col lg:flex-row items-start gap-8">
+          <Card 
+            className="flex-1 w-full animate-fade-in-up"
             style={{ animationDelay: '100ms', animationFillMode: 'forwards', opacity: 0 }}
           >
-            {hasSessionStarted || messages.length > 0 ? (
-               <Card className="flex flex-1 flex-col rounded-2xl shadow-xl overflow-hidden">
-                  <ChatRoom
-                    messages={messages}
-                    user={user}
-                    csUser={activeChat?.cs || users.cs}
-                    onSendMessage={handleSendMessage}
-                    isCategoryDisabled={true}
-                    category={category}
-                    onCategoryChange={setCategory}
-                  />
-              </Card>
-            ) : (
-              <Card className="flex flex-1 items-center justify-center p-4 text-center rounded-2xl shadow-xl">
-                <p className="text-muted-foreground text-lg">Memuat sesi konsultasi Anda...</p>
-              </Card>
-            )}
+            <CardContent className="p-8 text-center">
+              <h2 className="text-xl font-semibold mb-3">Mulai Sesi Baru</h2>
+              <p className="text-muted-foreground mb-6">
+                Klik tombol di bawah untuk membuka formulir permintaan konsultasi. Jelaskan masalah Anda dan tim kami akan segera membantu.
+              </p>
+              <Button onClick={() => setShowStartModal(true)}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Buat Permintaan Konsultasi
+              </Button>
+            </CardContent>
+          </Card>
+          <div className="w-full lg:w-auto">
+            <AvailableCS csList={csList} />
           </div>
-          <AvailableCS csList={csList} />
         </div>
-        <FeedbackModal
-          isOpen={showFeedbackModal}
-          onClose={() => setShowFeedbackModal(false)}
-          onSubmit={handleFeedbackSubmit}
-        />
       </div>
     </>
   );
