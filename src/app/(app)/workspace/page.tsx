@@ -136,18 +136,22 @@ function ConsultationWorkspace() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background p-2 md:p-6">
-      <div className="flex items-center justify-between mb-6 px-4 md:px-0">
+    <div className="flex flex-col h-[calc(100vh-8rem-2rem)]">
+      <div className="flex-shrink-0 mb-6">
         <div className="flex items-center gap-2 text-xl md:text-2xl font-bold tracking-tight">
           <MessageSquare className="h-6 w-6" />
           <h1>Ruang Konsultasi CS</h1>
         </div>
       </div>
-      <div className="flex-1 flex gap-6 pb-4 overflow-x-auto">
+      <div className="flex-1 flex gap-6 pb-4 -mx-4 px-4 overflow-x-auto">
         {activeChats.length > 0 ? (
           <>
-            {activeChats.map(chat => (
-              <div key={chat.id} className="flex-shrink-0 w-full max-w-sm flex flex-col">
+            {activeChats.map((chat, index) => (
+              <div 
+                key={chat.id} 
+                className="flex-shrink-0 w-full max-w-sm flex flex-col animate-fade-in-up"
+                style={{ animationDelay: `${index * 100}ms`, animationFillMode: 'forwards', opacity: 0 }}
+              >
                 <Card className="flex flex-1 flex-col rounded-2xl shadow-md overflow-hidden">
                   <CardHeader className="flex-row items-center justify-between p-4 bg-background border-b">
                     <div className='flex items-center gap-3 overflow-hidden'>
@@ -185,11 +189,13 @@ function ConsultationWorkspace() {
             ))}
           </>
         ) : (
-          <Card className="flex flex-col items-center justify-center rounded-2xl shadow-md p-8 flex-1">
-            <MessageSquare className="h-16 w-16 text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold">Tidak Ada Konsultasi Aktif</h2>
-            <p className="text-muted-foreground mt-2 text-center">Pilih sesi dari halaman dashboard untuk memulai.</p>
-          </Card>
+           <div className='flex-1 flex items-center justify-center'>
+                <Card className="flex flex-col items-center justify-center rounded-2xl shadow-md p-8 w-full max-w-md">
+                    <MessageSquare className="h-16 w-16 text-muted-foreground mb-4" />
+                    <h2 className="text-xl font-semibold">Tidak Ada Konsultasi Aktif</h2>
+                    <p className="text-muted-foreground mt-2 text-center">Pilih sesi dari halaman dashboard untuk memulai.</p>
+                </Card>
+           </div>
         )}
       </div>
       <CloseConsultationModal
@@ -204,3 +210,4 @@ function ConsultationWorkspace() {
 export default function CsWorkspacePage() {
   return <ConsultationWorkspace />;
 }
+
